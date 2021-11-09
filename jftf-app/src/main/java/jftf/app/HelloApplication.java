@@ -1,4 +1,4 @@
-package org.jftf.jftfapp;
+package jftf.app;
 
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;

@@ -1,3 +1,5 @@
 rootProject.name = 'JFTF'
 include 'jftj-lib'
 include 'jftf-app'
+include 'jftf-core'
+

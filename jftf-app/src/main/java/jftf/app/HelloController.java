@@ -1,4 +1,4 @@
-package org.jftf.jftfapp;
+package jftf.app;
 
 import javafx.fxml.FXML;
 import javafx.scene.control.Label;

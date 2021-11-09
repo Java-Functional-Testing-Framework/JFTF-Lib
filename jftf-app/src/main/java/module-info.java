@@ -1,8 +1,7 @@
-module org.jftf.jftfapp {
+module jftf.app {
     requires javafx.controls;
     requires javafx.fxml;
 
-
-    opens org.jftf.jftfapp to javafx.fxml;
-    exports org.jftf.jftfapp;
+    opens jftf.app to javafx.fxml;
+    exports jftf.app;
 }

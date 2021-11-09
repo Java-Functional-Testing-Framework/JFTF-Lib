@@ -23,8 +23,8 @@ tasks.withType(JavaCompile) {
 }
 
 application {
-    mainModule = 'org.jftf.jftfapp'
-    mainClass = 'org.jftf.jftfapp.HelloApplication'
+    mainModule = 'jftf.app'
+    mainClass = 'jftf.app.HelloApplication'
 }
 
 javafx {
@@ -33,7 +33,6 @@ javafx {
 }
 
 dependencies {
-
     testImplementation("org.junit.jupiter:junit-jupiter-api:${junitVersion}")
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:${junitVersion}")
 }
