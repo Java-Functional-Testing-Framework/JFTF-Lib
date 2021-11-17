@@ -94,7 +94,7 @@ public class LoggingController {
     private void announceContextRegistration(){
         if(!this.faultMode){
             if(internalLogs)
-                this.LogToMinimumLogLevel(String.format("Shifted to attached logging context for application ID: '%s' | Log level: '%s' | Appender type: '%s (INTERNAL / IGNORE)'", this.currentLoggerContextInformation.getApplicationID(),this.currentLoggerContextInformation.getLogLevel().levelStr,this.currentLoggerContextInformation.getAppender()));
+                this.LogToMinimumLogLevel(String.format("Shifted to attached logging context for application ID: '%s' | Log level: '%s' | Appender type: '%s' (INTERNAL / IGNORE)'", this.currentLoggerContextInformation.getApplicationID(),this.currentLoggerContextInformation.getLogLevel().levelStr,this.currentLoggerContextInformation.getAppender()));
         }
     }
 

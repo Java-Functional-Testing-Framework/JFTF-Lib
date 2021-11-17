@@ -10,7 +10,7 @@ public class LoggingContextInformation {
     public final static Level debugLogLevel = Level.DEBUG;
     public final static Level infoLogLevel = Level.INFO;
     public final static Level errorLogLevel = Level.ERROR;
-    public final static Level defaultLogLevel = Level.INFO;
+    public final static Level defaultLogLevel = infoLogLevel;
     public final static String consoleAppender = "consoleAppender";
     private final static String consoleAppenderConfiguration = "logback.xml";
     public final static String fileAppender = "fileAppender";
