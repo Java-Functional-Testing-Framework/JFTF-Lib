@@ -1,11 +1,11 @@
-<configuration>
-
+<configuration>logback_file
+    <timestamp key="bySecond" datePattern="yyyy-MM-dd'T'HH-mm-ss"
+               timeReference="contextBirth"/>
     <appender name="fileAppender" class="ch.qos.logback.core.FileAppender">
-        <file>testFile.log</file>
-        <append>true</append>
+        <file>${JFTF_LOGS}/${CUR_APP_NAME}/log_${CUR_APP_NAME}_${bySecond}.log</file>
         <immediateFlush>true</immediateFlush>
         <encoder>
-            <pattern>%-4relative [%thread] %-5level %logger{35} - %msg%n</pattern>
+            <pattern>%d{HH:mm:ss.SSS} %-5level %logger{36} - %msg%n</pattern>
         </encoder>
     </appender>
 

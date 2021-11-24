@@ -78,7 +78,7 @@ class LoggingControllerFactoryTest {
     }
 
     @Test
-    @DisplayName("Lowest log level should correspond with the default log level given to LoggerFactory")
+    @DisplayName("Lowest log level should correspond with the default log level given to LoggerFactory, if configuration for the logger context worked as expected")
     public void LoggingControllerFactoryLogLevelTest(){
         this.Logger.LogToMinimumLogLevel("Log level validation message!");
         String consoleOutContent = readConsoleOut();
