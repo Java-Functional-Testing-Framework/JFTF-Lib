@@ -124,7 +124,7 @@ public class LoggingController {
         if(!this.faultMode){
             if(this.rootLogger.getLevel() != this.currentLoggerContextInformation.getLogLevel()) {
                 if(internalLogs)
-                    this.LogInfo(String.format("Shifting log level for root logger: '%s' --> '%s' (INTERNAL / IGNORE)", this.rootLogger.getLevel().levelStr, this.currentLoggerContextInformation.getLogLevel().levelStr));
+                    this.LogInfo(String.format("Shifting log level for logging context: '%s' --> '%s' (INTERNAL / IGNORE)", this.rootLogger.getLevel().levelStr, this.currentLoggerContextInformation.getLogLevel().levelStr));
                 try {
                     this.rootLogger.setLevel(this.currentLoggerContextInformation.getLogLevel());
                 }
@@ -141,7 +141,7 @@ public class LoggingController {
         if (!this.faultMode) {
             if (this.rootLogger.getLevel() != newContextInformation.getLogLevel()) {
                 if(internalLogs)
-                    this.LogToMinimumLogLevel(String.format("Shifting log level for logging context : '%s' --> '%s' (INTERNAL / IGNORE)", this.rootLogger.getLevel().levelStr, newContextInformation.getLogLevel()));
+                    this.LogToMinimumLogLevel(String.format("Shifting log level for logging context: '%s' --> '%s' (INTERNAL / IGNORE)", this.rootLogger.getLevel().levelStr, newContextInformation.getLogLevel()));
                 try {
                     this.rootLogger.setLevel(newContextInformation.getLogLevel());
                 } catch (Exception e) {
