@@ -10,7 +10,6 @@ import java.util.Objects;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-@TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class LoggingControllerFactoryTest {
     private LoggingController Logger;
     private File consoleOut = null;
@@ -94,7 +93,7 @@ class LoggingControllerFactoryTest {
         }
     }
 
-    @AfterAll
+    @AfterEach
     void Teardown(){
         if(!this.consoleOut.delete())
             System.err.println("Failed to delete temp file!");

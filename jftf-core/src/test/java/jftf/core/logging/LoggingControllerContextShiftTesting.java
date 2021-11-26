@@ -6,6 +6,9 @@ import java.io.*;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.Arrays;
 import java.util.Objects;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -29,8 +32,26 @@ class LoggingControllerContextShiftTesting {
     private final String newContextAttachedConfirmationMessage = String.format("New logging context information attached to logger! Log level: '%s' | Appender type: '%s' (INTERNAL / IGNORE)",LoggingContextInformation.errorLogLevel,LoggingContextInformation.consoleAppender);
     private final String shiftingToAttachedContextInitializationMessage = String.format("Shifting to attached context information! Log level: '%s' | Appender type: '%s' (INTERNAL / IGNORE)",LoggingContextInformation.errorLogLevel,LoggingContextInformation.consoleAppender);
     private final String shiftingToAttachedContextConfirmationMessage = String.format("Shifted to attached logging context for application ID: '%s' | Log level: '%s' | Appender type: '%s' (INTERNAL / IGNORE)'",loggerApplicationID,LoggingContextInformation.errorLogLevel,LoggingContextInformation.consoleAppender);
+    private final String shiftingToFileAppenderInitializationMessage = String.format("Shifting to new logging context information! Log level: '%s' | Appender type: '%s' (INTERNAL / IGNORE)",LoggingContextInformation.infoLogLevel,LoggingContextInformation.fileAppender);
+    private final String shiftingToFileAppenderConfirmationMessage = String.format("Shifted to new logging context for application ID: '%s' | Log level: '%s' | Appender type: '%s' (INTERNAL / IGNORE)",loggerApplicationID,LoggingContextInformation.infoLogLevel,LoggingContextInformation.fileAppender);
+    private final Path jftfHomePath = Paths.get(System.getProperty("user.home"),".jftf");
+    private final Path jftfHomePathLog = Paths.get(jftfHomePath.toString(),"logs");
+    private final Path jftfHomePathLogCurrentApp = Paths.get(jftfHomePathLog.toString(),loggerApplicationID);
 
-
+    @BeforeAll
+    void initScenario(){
+        if(!Files.exists(jftfHomePath)){
+            try {
+                Files.createDirectory(jftfHomePath);
+            }
+            catch(IOException e){
+                System.err.println("Couldn't create .jftf home directory!");
+                e.printStackTrace();
+            }
+        }
+        System.setProperty("JFTF_LOGS",jftfHomePathLog.toString());
+        System.setProperty("CUR_APP_NAME",loggerApplicationID);
+    }
     @BeforeEach
     void setUp() {
         try {
@@ -61,6 +82,25 @@ class LoggingControllerContextShiftTesting {
                 }
             }
             return  consoleOutBuilder.toString();
+        }
+        catch (IOException e){
+            System.err.println("Failed to read from console out temp file!");
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    private String readFromInputStream(InputStream inputStream){
+        try{
+            StringBuilder fileStringBuilder = new StringBuilder();
+            try (Reader reader = new BufferedReader(new InputStreamReader
+                    (inputStream, Charset.forName(StandardCharsets.UTF_8.name())))) {
+                int c;
+                while ((c = reader.read()) != -1) {
+                    fileStringBuilder.append((char) c);
+                }
+            }
+            return  fileStringBuilder.toString();
         }
         catch (IOException e){
             System.err.println("Failed to read from console out temp file!");
@@ -225,8 +265,49 @@ class LoggingControllerContextShiftTesting {
         }
     }
 
-    @AfterAll
-    void tearDown() {
+    @Test
+    void LoggingControllerShiftToFileAppender(){
+        this.Logger.shiftToNewContextInformation(new LoggingContextInformation(LoggingContextInformation.infoLogLevel,LoggingContextInformation.fileAppender));
+        this.Logger.LogToMinimumLogLevel(infoLogLevelCheckMessage);
+        assertTrue(Files.exists(jftfHomePathLogCurrentApp));
+        File currentAppLogDirectory = new File(jftfHomePathLogCurrentApp.toString());
+        assertEquals(Arrays.stream(Objects.requireNonNull(currentAppLogDirectory.listFiles())).count(),1);
+        try {
+            InputStream logFileInputStream = new FileInputStream(Objects.requireNonNull(currentAppLogDirectory.listFiles())[0]);
+            String logFileContent = readFromInputStream(logFileInputStream);
+            String consoleOutContent = readConsoleOut();
+            try{
+                assertTrue(Objects.requireNonNull(consoleOutContent).contains(shiftingToFileAppenderInitializationMessage));
+                assertTrue(Objects.requireNonNull(logFileContent).contains(shiftingToFileAppenderConfirmationMessage));
+                assertTrue(Objects.requireNonNull(logFileContent).contains(expectedInfoLogLevelCheckMessage));
+            }
+            catch (AssertionError e){
+                System.err.println("RECEIVED");
+                System.err.println(consoleOutContent);
+                System.err.println(logFileContent);
+                System.err.println("EXPECTED");
+                System.err.println(shiftingToFileAppenderInitializationMessage);
+                System.err.println(shiftingToFileAppenderConfirmationMessage);
+                System.err.println(expectedInfoLogLevelCheckMessage);
+                throw e;
+            }
+        }
+        catch (FileNotFoundException e){
+            System.err.println("Log file not found!");
+            e.printStackTrace();
+        }
+        try {
+            Arrays.stream(Objects.requireNonNull(currentAppLogDirectory.listFiles())).forEach(File::delete);
+            assertTrue(currentAppLogDirectory.delete());
+        }
+        catch(Exception e){
+            System.err.println("Failed to delete test log directory!");
+            e.printStackTrace();
+        }
+    }
+
+    @AfterEach
+    void tearDown(){
         if(!this.consoleOut.delete())
             System.err.println("Failed to delete temp file!");
     }
