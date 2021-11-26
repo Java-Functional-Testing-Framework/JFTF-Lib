@@ -2,23 +2,30 @@ package jftf.core.logging;
 import ch.qos.logback.classic.LoggerContext;
 import ch.qos.logback.classic.joran.JoranConfigurator;
 import ch.qos.logback.core.joran.spi.JoranException;
+import jftf.core.ioctl.ControlIO;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.logging.FileHandler;
+import java.util.logging.Level;
+import java.util.logging.SimpleFormatter;
 
 public class LoggingController {
     private Logger LOGGER = null;
+    private java.util.logging.Logger JAVA_LOGGER = null;
     private ch.qos.logback.classic.Logger rootLogger = null;
     private LoggingContextInformation currentLoggerContextInformation;
     private LoggerContext currentLoggerContext = null;
     private boolean faultMode = false;
-    private final List<String> faultModeErrorMessages = new ArrayList<>();
+    private String faultModeErrorMessage = "";
     private static LoggingController loggerInstance;
     private static boolean internalLogs = false;
 
@@ -66,17 +73,26 @@ public class LoggingController {
         if(!this.faultMode){
             this.LOGGER.debug(logMessage);
         }
+        else{
+            this.JAVA_LOGGER.log(Level.FINEST,logMessage);
+        }
     }
 
     public void LogInfo(String logMessage){
         if(!this.faultMode){
             this.LOGGER.info(logMessage);
         }
+        else{
+            this.JAVA_LOGGER.log(Level.INFO,logMessage);
+        }
     }
 
     public void LogError(String logMessage){
         if(!this.faultMode){
             this.LOGGER.error(logMessage);
+        }
+        else{
+            this.JAVA_LOGGER.log(Level.SEVERE,logMessage);
         }
     }
 
@@ -88,6 +104,9 @@ public class LoggingController {
                 this.LogInfo(logMessage);
             if(this.rootLogger.getLevel() == LoggingContextInformation.errorLogLevel)
                 this.LogError(logMessage);
+        }
+        else{
+            this.LogDebug(logMessage);
         }
     }
 
@@ -105,19 +124,29 @@ public class LoggingController {
         }
     }
 
-    private void switchToFaultMode(Exception e){
+    private void setupJavaLogger(){
+        this.JAVA_LOGGER = java.util.logging.Logger.getLogger(this.currentLoggerContextInformation.getApplicationID());
+        Path javaLogFilePath = ControlIO.generateJavaLogFile(this.currentLoggerContextInformation.getApplicationID());
+        try {
+            FileHandler fileHandler = new FileHandler(javaLogFilePath.toString());
+            SimpleFormatter simpleFormatter = new SimpleFormatter();
+            fileHandler.setFormatter(simpleFormatter);
+            this.JAVA_LOGGER.addHandler(fileHandler);
+        }
+        catch (IOException e){
+            e.printStackTrace();
+            System.exit(1);
+        }
+    }
+
+    public void switchToFaultMode(Exception e){
         this.faultMode = true;
         StringWriter sw = new StringWriter();
         PrintWriter pw = new PrintWriter(sw);
         e.printStackTrace(pw);
-        this.faultModeErrorMessages.add(sw.toString());
-    }
-
-    private void printFaultErrorMessages(){
-        if(this.faultMode)
-            System.out.println(this.faultModeErrorMessages);
-        else
-            System.out.println("Logger not currently in fault mode!");
+        this.faultModeErrorMessage = sw.toString();
+        this.setupJavaLogger();
+        this.LogError(String.format("Logging controller switching to fault mode! Reason --> %s",this.faultModeErrorMessage));
     }
 
     private void shiftToContextInformationLogLevel(){

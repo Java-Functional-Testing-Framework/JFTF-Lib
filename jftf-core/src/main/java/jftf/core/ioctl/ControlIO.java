@@ -2,10 +2,14 @@ package jftf.core.ioctl;
 
 import java.io.IOException;
 import java.nio.file.*;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
 public abstract class ControlIO implements IControlIO{
     private static String homeDirectoryURI = null;
     protected String applicationDirectoryName = null;
+    protected static String osGenericJavaLogDirectory = System.getProperty("java.io.tmpdir");
+    private static final SimpleDateFormat javaLogFileTimestampFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH-mm-ss");
     private static Path applicationHomeDirectory = null;
     protected static String getVarHomeDirectory() {
         if(homeDirectoryURI == null){
@@ -63,5 +67,18 @@ public abstract class ControlIO implements IControlIO{
             }
         }
         return null;
+    }
+
+    public static Path generateJavaLogFile(String currentContextApplicationID){
+        String javaLogFileTimestamp = javaLogFileTimestampFormat.format(new Date())+".log";
+        Path javaLogFilePath = Paths.get(osGenericJavaLogDirectory, String.format("jftf_%s_%s", currentContextApplicationID, javaLogFileTimestamp));
+        try {
+            Files.createFile(javaLogFilePath);
+        }
+        catch (IOException e){
+            e.printStackTrace();
+            System.exit(1);
+        }
+        return javaLogFilePath;
     }
 }
