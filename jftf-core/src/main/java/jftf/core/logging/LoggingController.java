@@ -6,17 +6,10 @@ import jftf.core.ioctl.ControlIO;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.PrintWriter;
-import java.io.StringWriter;
+import java.io.*;
 import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Objects;
-import java.util.logging.FileHandler;
-import java.util.logging.Level;
-import java.util.logging.SimpleFormatter;
+import java.util.logging.*;
 
 public class LoggingController {
     private Logger LOGGER = null;
@@ -125,13 +118,23 @@ public class LoggingController {
     }
 
     private void setupJavaLogger(){
+        try {
+            LogManager.getLogManager().readConfiguration(LoggingController.class.getClassLoader().getResourceAsStream(LoggingContextInformation.getJavaLoggerConfigurationFile()));
+        }
+        catch(IOException e){
+            e.printStackTrace();
+            System.exit(1);
+        }
         this.JAVA_LOGGER = java.util.logging.Logger.getLogger(this.currentLoggerContextInformation.getApplicationID());
         Path javaLogFilePath = ControlIO.generateJavaLogFile(this.currentLoggerContextInformation.getApplicationID());
         try {
             FileHandler fileHandler = new FileHandler(javaLogFilePath.toString());
             SimpleFormatter simpleFormatter = new SimpleFormatter();
             fileHandler.setFormatter(simpleFormatter);
+            StreamHandler streamOutHandler = new StreamHandler(System.out, simpleFormatter);
             this.JAVA_LOGGER.addHandler(fileHandler);
+            this.JAVA_LOGGER.addHandler(streamOutHandler);
+            this.LogInfo(String.format("Registered new file handler for Java fault logger with file path: '%s'",javaLogFilePath));
         }
         catch (IOException e){
             e.printStackTrace();
@@ -146,7 +149,12 @@ public class LoggingController {
         e.printStackTrace(pw);
         this.faultModeErrorMessage = sw.toString();
         this.setupJavaLogger();
-        this.LogError(String.format("Logging controller switching to fault mode! Reason --> %s",this.faultModeErrorMessage));
+        this.LogError(String.format("Logging controller switching to Java fault mode logger! Reason --> %s",this.faultModeErrorMessage));
+    }
+
+    public void switchToLogbackMode(){
+        this.faultMode = false;
+        this.JAVA_LOGGER = null;
     }
 
     private void shiftToContextInformationLogLevel(){

@@ -37,6 +37,14 @@ class LoggingControllerContextShiftTesting {
     private final Path jftfHomePath = Paths.get(System.getProperty("user.home"),".jftf");
     private final Path jftfHomePathLog = Paths.get(jftfHomePath.toString(),"logs");
     private final Path jftfHomePathLogCurrentApp = Paths.get(jftfHomePathLog.toString(),loggerApplicationID);
+    private final String faultModeLoggerReason = "JFTF fault mode logger test!";
+    private final String faultModeLoggerConfirmationMessage = String.format("[SEVERE ] Logging controller switching to Java fault mode logger! Reason --> java.lang.Exception: %s",faultModeLoggerReason);
+    private final String faultModeLoggerFileHandlerRegistrationConfirmationMessage = "[INFO   ] Registered new file handler for Java fault logger with file path:";
+    private final String javaLoggerExpectedDebugLogLevelCheckMessage = String.format("[FINEST ] %s",debugLogLevelCheckMessage);
+    private final String javaLoggerExpectedInfoLogLevelCheckMessage = String.format("[INFO   ] %s",infoLogLevelCheckMessage);
+    private final String javaLoggerExpectedErrorLogLevelCheckMessage = String.format("[SEVERE ] %s",errorLogLevelCheckMessage);
+    private final String javaLoggerMinimumLogMessage = "Minimum log message!";
+    private final String javaLoggerExpectedMinimumLogLevelCheckMessage = String.format("[FINEST ] %s",javaLoggerMinimumLogMessage);
 
     @BeforeAll
     void initScenario(){
@@ -52,12 +60,14 @@ class LoggingControllerContextShiftTesting {
         System.setProperty("JFTF_LOGS",jftfHomePathLog.toString());
         System.setProperty("CUR_APP_NAME",loggerApplicationID);
     }
+
     @BeforeEach
     void setUp() {
         try {
             this.consoleOut = Files.createTempFile("jftf_shift_test_stdout", ".txt").toFile();
         }
         catch(IOException e){
+            System.err.println("Failed to create stdout temp file!");
             e.printStackTrace();
         }
         try {
@@ -266,11 +276,12 @@ class LoggingControllerContextShiftTesting {
     }
 
     @Test
+    @DisplayName("Shifting to file appender should produce a log file inside the jftf home directory, and all logging should be directed into this file")
     void LoggingControllerShiftToFileAppender(){
         this.Logger.shiftToNewContextInformation(new LoggingContextInformation(LoggingContextInformation.infoLogLevel,LoggingContextInformation.fileAppender));
         this.Logger.LogToMinimumLogLevel(infoLogLevelCheckMessage);
         assertTrue(Files.exists(jftfHomePathLogCurrentApp));
-        File currentAppLogDirectory = new File(jftfHomePathLogCurrentApp.toString());
+        File currentAppLogDirectory = jftfHomePathLogCurrentApp.toFile();
         assertEquals(Arrays.stream(Objects.requireNonNull(currentAppLogDirectory.listFiles())).count(),1);
         try {
             InputStream logFileInputStream = new FileInputStream(Objects.requireNonNull(currentAppLogDirectory.listFiles())[0]);
@@ -302,6 +313,57 @@ class LoggingControllerContextShiftTesting {
         }
         catch(Exception e){
             System.err.println("Failed to delete test log directory!");
+            e.printStackTrace();
+        }
+    }
+
+    @Test
+    @DisplayName("Java fault mode logging should get triggered whenever the logback framework fails to initialize correctly. The java logger should register a file and console handler, and all logs should be directed to these handlers")
+    void LoggingControllerFaultModeLoggerTest(){
+        this.Logger.switchToFaultMode(new Exception(faultModeLoggerReason));
+        this.Logger.LogDebug(debugLogLevelCheckMessage);
+        this.Logger.LogInfo(infoLogLevelCheckMessage);
+        this.Logger.LogError(errorLogLevelCheckMessage);
+        this.Logger.LogToMinimumLogLevel(javaLoggerMinimumLogMessage);
+        String consoleOutContent = readConsoleOut();
+        Path logFilePath = Path.of(consoleOutContent.substring(consoleOutContent.indexOf("'") + 1, consoleOutContent.indexOf("'",consoleOutContent.indexOf("'")+1)));
+        assertTrue(Files.exists(logFilePath));
+        File logFile = logFilePath.toFile();
+        try {
+            InputStream logFileInputStream = new FileInputStream(logFile);
+            String logFileContent = readFromInputStream(logFileInputStream);
+            try {
+                assertTrue(Objects.requireNonNull(consoleOutContent).contains(faultModeLoggerConfirmationMessage));
+                assertTrue(Objects.requireNonNull(consoleOutContent).contains(faultModeLoggerFileHandlerRegistrationConfirmationMessage));
+                assertTrue(Objects.requireNonNull(logFileContent).contains(faultModeLoggerConfirmationMessage));
+                assertTrue(Objects.requireNonNull(logFileContent).contains(faultModeLoggerFileHandlerRegistrationConfirmationMessage));
+                assertTrue(Objects.requireNonNull(logFileContent).contains(javaLoggerExpectedDebugLogLevelCheckMessage));
+                assertTrue(Objects.requireNonNull(logFileContent).contains(javaLoggerExpectedInfoLogLevelCheckMessage));
+                assertTrue(Objects.requireNonNull(logFileContent).contains(javaLoggerExpectedErrorLogLevelCheckMessage));
+                assertTrue(Objects.requireNonNull(logFileContent).contains(javaLoggerExpectedMinimumLogLevelCheckMessage));
+            } catch (AssertionError e) {
+                System.err.println("RECEIVED");
+                System.err.println(consoleOutContent);
+                System.err.println("EXPECTED");
+                System.err.println(faultModeLoggerFileHandlerRegistrationConfirmationMessage);
+                System.err.println(faultModeLoggerConfirmationMessage);
+                System.err.println(javaLoggerExpectedDebugLogLevelCheckMessage);
+                System.err.println(javaLoggerExpectedInfoLogLevelCheckMessage);
+                System.err.println(javaLoggerExpectedErrorLogLevelCheckMessage);
+                System.err.println(javaLoggerExpectedMinimumLogLevelCheckMessage);
+                throw e;
+            }
+        }
+        catch (FileNotFoundException e){
+            System.err.println("Log file not found!");
+            e.printStackTrace();
+        }
+        this.Logger.switchToLogbackMode();
+        try{
+            assertTrue(logFile.delete());
+        }
+        catch (Exception e){
+            System.err.println("Failed to delete fault logger log file!");
             e.printStackTrace();
         }
     }

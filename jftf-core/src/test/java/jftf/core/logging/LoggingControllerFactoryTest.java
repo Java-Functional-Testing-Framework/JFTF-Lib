@@ -24,6 +24,7 @@ class LoggingControllerFactoryTest {
             this.consoleOut = Files.createTempFile("jftf_test_stdout", ".txt").toFile();
         }
         catch(IOException e){
+            System.err.println("Failed to create stdout temp file!");
             e.printStackTrace();
         }
         try {

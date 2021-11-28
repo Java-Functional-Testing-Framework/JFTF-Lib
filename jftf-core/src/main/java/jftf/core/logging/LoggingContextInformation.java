@@ -17,6 +17,7 @@ public class LoggingContextInformation {
     private final static String fileAppenderConfiguration = "logback_file.xml";
     public final static String defaultAppender = consoleAppender;
     private final static String defaultAppenderConfiguration = consoleAppenderConfiguration;
+    private final static String javaLoggerConfigurationFile = "faultlogger.properties";
     public final static ArrayList<Level> validLogLevels = new ArrayList<>(Arrays.asList(debugLogLevel,infoLogLevel,errorLogLevel));
     public final static ArrayList<String> validAppenders = new ArrayList<>(Arrays.asList(consoleAppender,fileAppender));
     private String currentApplicationID = "";
@@ -63,6 +64,10 @@ public class LoggingContextInformation {
             return LoggingContextInformation.fileAppenderConfiguration;
         else
             return LoggingContextInformation.defaultAppenderConfiguration;
+    }
+
+    static public String getJavaLoggerConfigurationFile(){
+        return LoggingContextInformation.javaLoggerConfigurationFile;
     }
 
 }
