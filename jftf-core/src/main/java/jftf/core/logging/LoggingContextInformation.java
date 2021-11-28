@@ -15,11 +15,13 @@ public class LoggingContextInformation {
     private final static String consoleAppenderConfiguration = "logback.xml";
     public final static String fileAppender = "fileAppender";
     private final static String fileAppenderConfiguration = "logback_file.xml";
+    public final static String syslogAppender = "syslogAppender";
+    private final static String syslogAppenderConfiguration = "logback_syslog.xml";
     public final static String defaultAppender = consoleAppender;
     private final static String defaultAppenderConfiguration = consoleAppenderConfiguration;
     private final static String javaLoggerConfigurationFile = "faultlogger.properties";
     public final static ArrayList<Level> validLogLevels = new ArrayList<>(Arrays.asList(debugLogLevel,infoLogLevel,errorLogLevel));
-    public final static ArrayList<String> validAppenders = new ArrayList<>(Arrays.asList(consoleAppender,fileAppender));
+    public final static ArrayList<String> validAppenders = new ArrayList<>(Arrays.asList(consoleAppender,fileAppender,syslogAppender));
     private String currentApplicationID = "";
     private Level baseLogLevel = defaultLogLevel;
     private String baseAppender = defaultAppender;
@@ -62,6 +64,8 @@ public class LoggingContextInformation {
             return LoggingContextInformation.consoleAppenderConfiguration;
         else if (Objects.equals(this.baseAppender, LoggingContextInformation.fileAppender))
             return LoggingContextInformation.fileAppenderConfiguration;
+        else if(Objects.equals(this.baseAppender,LoggingContextInformation.syslogAppender))
+            return LoggingContextInformation.syslogAppenderConfiguration;
         else
             return LoggingContextInformation.defaultAppenderConfiguration;
     }
