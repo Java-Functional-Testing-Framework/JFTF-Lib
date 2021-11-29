@@ -1,0 +1,12 @@
+<configuration>logback_syslog
+    <appender name="syslogAppender" class="ch.qos.logback.classic.net.SyslogAppender">
+        <syslogHost>${SYSLOG_SERVER_IP}</syslogHost>
+        <port>514</port>
+        <facility>SYSLOG</facility>
+        <suffixPattern>%-5level %logger{36} - %msg%n</suffixPattern>
+    </appender>
+
+    <root level="INFO">
+        <appender-ref ref="syslogAppender" />
+    </root>
+</configuration>
