@@ -1,6 +1,7 @@
 package jftf.core.logging;
 
 import org.junit.jupiter.api.*;
+import org.apache.commons.lang3.StringUtils;
 
 import java.io.*;
 import java.nio.charset.Charset;
@@ -45,6 +46,10 @@ class LoggingControllerContextShiftTesting {
     private final String javaLoggerExpectedErrorLogLevelCheckMessage = String.format("[SEVERE ] %s",errorLogLevelCheckMessage);
     private final String javaLoggerMinimumLogMessage = "Minimum log message!";
     private final String javaLoggerExpectedMinimumLogLevelCheckMessage = String.format("[FINEST ] %s",javaLoggerMinimumLogMessage);
+    private final String syslogServerIp = "localhost";
+    private final String syslogLogFileUri = "/var/log/syslog";
+    private final String shiftingToSyslogAppenderInitializationMessage = String.format("Shifting to new logging context information! Log level: '%s' | Appender type: '%s' (INTERNAL / IGNORE)",LoggingContextInformation.infoLogLevel,LoggingContextInformation.syslogAppender);
+    private final String shiftingToSyslogAppenderConfirmationMessage = String.format("Shifted to new logging context for application ID: '%s' | Log level: '%s' | Appender type: '%s' (INTERNAL / IGNORE)",loggerApplicationID,LoggingContextInformation.infoLogLevel,LoggingContextInformation.syslogAppender);
 
     @BeforeAll
     void initScenario(){
@@ -59,6 +64,7 @@ class LoggingControllerContextShiftTesting {
         }
         System.setProperty("JFTF_LOGS",jftfHomePathLog.toString());
         System.setProperty("CUR_APP_NAME",loggerApplicationID);
+        System.setProperty("SYSLOG_SERVER_IP",syslogServerIp);
     }
 
     @BeforeEach
@@ -366,6 +372,43 @@ class LoggingControllerContextShiftTesting {
             System.err.println("Failed to delete fault logger log file!");
             e.printStackTrace();
         }
+    }
+
+    @Test
+    @DisplayName("Shifting to logback syslog appender should log via the syslog network protocol to the system syslog log file. This tests requires a syslog daemon configured to accept network logs")
+    void LoggingControllerShiftToSyslogAppender(){
+        this.Logger.shiftToNewContextInformation(new LoggingContextInformation(LoggingContextInformation.defaultLogLevel,LoggingContextInformation.defaultAppender));
+        Path syslogLogFilePath = Path.of(syslogLogFileUri);
+        assertTrue(Files.exists(syslogLogFilePath));
+        File syslogLogFile = syslogLogFilePath.toFile();
+        try {
+            InputStream logFileInputStream = new FileInputStream(syslogLogFile);
+            String syslogLogFileContentBefore = readFromInputStream(logFileInputStream);
+            this.Logger.shiftToNewContextInformation(new LoggingContextInformation(LoggingContextInformation.defaultLogLevel,LoggingContextInformation.syslogAppender));
+            this.Logger.LogToMinimumLogLevel(infoLogLevelCheckMessage);
+            logFileInputStream = new FileInputStream(syslogLogFile);
+            String syslogLogFileContent = readFromInputStream(logFileInputStream);
+            String consoleOutContent = readConsoleOut();
+            String syslogLogDifference = StringUtils.difference(syslogLogFileContentBefore,syslogLogFileContent);
+            try {
+                assertTrue(Objects.requireNonNull(consoleOutContent).contains(shiftingToSyslogAppenderInitializationMessage));
+                assertTrue(Objects.requireNonNull(syslogLogDifference).contains(shiftingToSyslogAppenderConfirmationMessage));
+                assertTrue(Objects.requireNonNull(syslogLogDifference).contains(expectedInfoLogLevelCheckMessage));
+            } catch (AssertionError e) {
+                System.err.println("RECEIVED");
+                System.err.println(consoleOutContent);
+                System.err.println("EXPECTED");
+                System.err.println(shiftingToSyslogAppenderInitializationMessage);
+                System.err.println(shiftingToSyslogAppenderConfirmationMessage);
+                System.err.println(expectedInfoLogLevelCheckMessage);
+                throw e;
+            }
+        }
+        catch (FileNotFoundException e){
+            System.err.println("Syslog log file not found!");
+            e.printStackTrace();
+        }
+
     }
 
     @AfterEach
