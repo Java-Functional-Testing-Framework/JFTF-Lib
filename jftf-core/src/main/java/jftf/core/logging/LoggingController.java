@@ -23,6 +23,7 @@ public class LoggingController {
     private static boolean internalLogs = false;
 
     private LoggingController(LoggingContextInformation currentLoggerContextInformation) {
+        ControlIO.setLogApplicationNameSystemVariable(currentLoggerContextInformation);
         try {
             if(!Objects.equals(currentLoggerContextInformation.getApplicationID(), ""))
                 this.LOGGER = LoggerFactory.getLogger(currentLoggerContextInformation.getApplicationID());
