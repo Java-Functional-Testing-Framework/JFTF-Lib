@@ -6,4 +6,6 @@ module jftf.core.daemon {
     requires ch.qos.logback.classic;
     requires ch.qos.logback.core;
     requires java.logging;
+    requires org.apache.commons.configuration2;
+    requires java.sql;
 }

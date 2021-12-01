@@ -8,5 +8,7 @@ public interface IControlIO {
     Path getJftfHomeDirectoryPath();
     Path getJftfLogDirectoryPath();
     Path getJftfTestCasesDirectoryPath();
+    Path getJftfConfigDirectoryPath();
     Map<String, List<String>> checkJftfEnvironmentIntegrity();
+    ConfigurationManager getConfigurationManager();
 }

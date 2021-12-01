@@ -9,26 +9,39 @@ import java.text.SimpleDateFormat;
 import java.util.*;
 
 public abstract class ControlIO extends JftfModule implements IControlIO {
+    protected ConfigurationManager configurationManager = null;
     protected static String osGenericHomeDirectoryURI = null;
     protected static String osGenericJavaLogDirectory = System.getProperty("java.io.tmpdir");
     private static final SimpleDateFormat javaLogFileTimestampFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH-mm-ss");
     protected String jftfHomeDirectoryName = null;
     protected String jftfLogDirectoryName = "logs";
     protected String jftfTestCasesDirectoryName = "test_cases";
-    protected String jftfLogDirectorySystemVariableKey = "JFTF_LOGS";
-    protected String jftfLogSyslogServerIpSystemVariableKey = "SYSLOG_SERVER_IP";
-    private static String jftfLogAppNameSystemVariableKey = "CUR_APP_NAME";
+    protected String jftfConfigDirectoryName = "config";
+    protected String jftfConfigFileDaemonName = "jftf_daemon_cfg.xml";
+    protected String jftfConfigFileLoggerName = "jftf_logger_cfg.xml";
+    protected final String jftfLogDirectorySystemVariableKey = "JFTF_LOGS";
+    protected final String jftfLogSyslogServerIpSystemVariableKey = "SYSLOG_SERVER_IP";
+    private final static String jftfLogAppNameSystemVariableKey = "CUR_APP_NAME";
     protected List<String> jftfSystemVariableKeyList = List.of(jftfLogDirectorySystemVariableKey,jftfLogSyslogServerIpSystemVariableKey);
     protected static Path jftfHomeDirectoryPath = null;
     protected static Path jftfLogDirectoryPath = null;
     protected static Path jftfTestCasesDirectoryPath = null;
+    protected static Path jftfConfigDirectoryPath = null;
     protected static List<Path> jftfDirectoriesList = null;
+    public final static String jftfIntegrityDirectoryOk = "DIRECTORY INTEGRITY OK";
+    public final static String jftfIntegrityDirectoryRepaired = "DIRECTORY INTEGRITY REPAIRED";
+    public final static String jftfIntegrityDirectoryNotOk = "DIRECTORY INTEGRITY NOT OK";
+    public final static String jftfIntegritySysvarOk = "SYS_VAR INTEGRITY OK";
+    public final static String jftfIntegritySysvarRepaired = "SYS_VAR INTEGRITY REPAIRED";
+    public final static String jftfIntegritySysvarNotOk = "SYS_VAR INTEGRITY NOT OK";
 
     protected final void setupEnvironment(){
         this.generateJftfHomeDirectory();
         this.generateJftfLogDirectory();
         this.generateJftfTestCasesDirectory();
+        this.generateJftfConfigDirectory();
         this.populateJftfDirectoriesList();
+        this.setupConfigurationManager();
         this.exportSystemVariables();
     }
 
@@ -98,9 +111,23 @@ public abstract class ControlIO extends JftfModule implements IControlIO {
         return jftfTestCasesDirectoryPath;
     }
 
+    protected final Path generateJftfConfigDirectoryPath(){
+        if(jftfConfigDirectoryPath == null){
+            try{
+                jftfConfigDirectoryPath = Paths.get(this.generateJftfHomeDirectoryPath().toString(),this.jftfConfigDirectoryName);
+            }
+            catch(InvalidPathException e){
+                System.err.println("(CRITICAL) Invalid system path for the JFTF config directory!");
+                e.printStackTrace();
+                System.exit(2);
+            }
+        }
+        return jftfConfigDirectoryPath;
+    }
+
     protected final List<Path> populateJftfDirectoriesList(){
         if(jftfDirectoriesList == null){
-            jftfDirectoriesList = List.of(this.generateJftfHomeDirectoryPath(),this.generateJftfLogDirectoryPath(),this.generateJftfTestCasesDirectoryPath());
+            jftfDirectoriesList = List.of(this.generateJftfHomeDirectoryPath(),this.generateJftfLogDirectoryPath(),this.generateJftfTestCasesDirectoryPath(),this.generateJftfConfigDirectoryPath());
         }
         return jftfDirectoriesList;
     }
@@ -144,6 +171,25 @@ public abstract class ControlIO extends JftfModule implements IControlIO {
         }
     }
 
+    protected final void generateJftfConfigDirectory() {
+        try {
+            Files.createDirectory(this.generateJftfConfigDirectoryPath());
+        }
+        catch(IOException e){
+            if(!(e instanceof FileAlreadyExistsException)) {
+                System.err.println("(CRITICAL) Failed to generate the JFTF config directory!");
+                e.printStackTrace();
+                System.exit(2);
+            }
+        }
+    }
+
+    protected final void setupConfigurationManager(){
+        Path daemonConfigFilePath = Paths.get(this.generateJftfConfigDirectoryPath().toString(),jftfConfigFileDaemonName);
+        Path loggerConfigFilePath = Paths.get(this.generateJftfConfigDirectoryPath().toString(),jftfConfigFileLoggerName);
+        this.configurationManager = ConfigurationManager.ConfigurationManagerFactory(daemonConfigFilePath,loggerConfigFilePath);
+    }
+
     protected final List<String> checkDirectoryIntegrity(){
         logger.LogInfo("Checking directory integrity");
         Map<Path, Boolean> directoryIntegrityMap = new HashMap<>();
@@ -155,7 +201,7 @@ public abstract class ControlIO extends JftfModule implements IControlIO {
         }
         else{
             logger.LogInfo("Directory integrity OK!");
-            corruptedDirectoriesList.add("DIRECTORY INTEGRITY OK");
+            corruptedDirectoriesList.add(jftfIntegrityDirectoryOk);
             return corruptedDirectoriesList;
         }
         this.populateJftfDirectoriesList().forEach(dir -> directoryIntegrityMap.put(dir,Files.exists(dir)));
@@ -166,10 +212,12 @@ public abstract class ControlIO extends JftfModule implements IControlIO {
                     corruptedDirectoriesList.add(entry.getKey().toString());
                 }
             }
+            logger.LogError(String.format("Corrupted directories %s",corruptedDirectoriesList));
+            corruptedDirectoriesList.add(0,jftfIntegrityDirectoryNotOk);
         }
         else {
             logger.LogInfo("Directory integrity repaired!");
-            corruptedDirectoriesList.add("DIRECTORY INTEGRITY REPAIRED");
+            corruptedDirectoriesList.add(jftfIntegrityDirectoryRepaired);
         }
         return corruptedDirectoriesList;
     }
@@ -185,7 +233,7 @@ public abstract class ControlIO extends JftfModule implements IControlIO {
         }
         else{
             logger.LogInfo("System variables  integrity OK!");
-            corruptedSysvarList.add("SYS_VAR INTEGRITY OK");
+            corruptedSysvarList.add(jftfIntegritySysvarOk);
             return corruptedSysvarList;
         }
         this.jftfSystemVariableKeyList.forEach(key -> systemVariablesIntegrityMap.put(key,System.getProperty(key)));
@@ -196,10 +244,12 @@ public abstract class ControlIO extends JftfModule implements IControlIO {
                     corruptedSysvarList.add(entry.getKey());
                 }
             }
+            logger.LogError(String.format("Corrupted system variables %s",corruptedSysvarList));
+            corruptedSysvarList.add(0,jftfIntegritySysvarNotOk);
         }
         else {
             logger.LogInfo("System variables integrity repaired!");
-            corruptedSysvarList.add("SYS_VAR INTEGRITY REPAIRED");
+            corruptedSysvarList.add(jftfIntegritySysvarRepaired);
         }
         return corruptedSysvarList;
     }
@@ -220,6 +270,12 @@ public abstract class ControlIO extends JftfModule implements IControlIO {
     }
 
     @Override
+    public Path getJftfConfigDirectoryPath() { return this.generateJftfConfigDirectoryPath(); }
+
+    @Override
+    public ConfigurationManager getConfigurationManager() { return this.configurationManager; }
+
+    @Override
     public Map<String, List<String>> checkJftfEnvironmentIntegrity(){
         logger.LogInfo("Checking JFTF environment integrity");
         Map<String, List<String>> JftfIntegrityMap = new HashMap<>();
@@ -235,7 +291,7 @@ public abstract class ControlIO extends JftfModule implements IControlIO {
             Files.createFile(javaLogFilePath);
         }
         catch (IOException e){
-            System.err.println("(CRITICAL) Failed to generate faut logger log file!");
+            System.err.println("(CRITICAL) Failed to generate fault logger log file!");
             e.printStackTrace();
             System.exit(1);
         }
