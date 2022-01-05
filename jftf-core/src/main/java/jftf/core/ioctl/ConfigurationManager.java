@@ -21,7 +21,7 @@ import java.nio.file.Path;
 import java.util.*;
 
 public class ConfigurationManager  {
-    private final CombinedConfiguration jftfModuleConfiguration;
+    private CombinedConfiguration jftfModuleConfiguration;
     private final Path jftfDaemonConfigurationFilePath;
     private final Path jftfLoggerConfigurationFilePath;
     private final List<Path> jftfConfigurationFilesPathList;
@@ -39,12 +39,16 @@ public class ConfigurationManager  {
     private final static Boolean defaultValueEnableLogging = Boolean.FALSE;
     private final static Map<String,List<String>> loggerConfigurationMap = new HashMap<>();
     private final static Map<String,List<String>> daemonConfigurationMap = new HashMap<>();
-    private final static String valueNotFound = "N/A";
+    public final static String valueNotFound = "N/A";
 
     private ConfigurationManager(Path jftfDaemonConfigurationFilePath, Path jftfLoggerConfigurationFilePath){
         this.jftfDaemonConfigurationFilePath = jftfDaemonConfigurationFilePath;
         this.jftfLoggerConfigurationFilePath = jftfLoggerConfigurationFilePath;
         jftfConfigurationFilesPathList = List.of(this.jftfDaemonConfigurationFilePath,this.jftfLoggerConfigurationFilePath);
+        this.initConfigurationManager();
+    }
+
+    public void initConfigurationManager(){
         this.jftfModuleConfiguration = new CombinedConfiguration();
         this.populateConfigurationMaps();
         this.loadConfigurationFiles();

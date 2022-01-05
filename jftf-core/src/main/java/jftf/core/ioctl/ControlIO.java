@@ -13,6 +13,7 @@ public abstract class ControlIO extends JftfModule implements IControlIO {
     protected static String osGenericHomeDirectoryURI = null;
     protected static String osGenericJavaLogDirectory = System.getProperty("java.io.tmpdir");
     private static final SimpleDateFormat javaLogFileTimestampFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH-mm-ss");
+    protected LoggingContextInformation attachedLoggingContextInformation = null;
     protected String jftfHomeDirectoryName = null;
     protected String jftfLogDirectoryName = "logs";
     protected String jftfTestCasesDirectoryName = "test_cases";
@@ -34,6 +35,9 @@ public abstract class ControlIO extends JftfModule implements IControlIO {
     public final static String jftfIntegritySysvarOk = "SYS_VAR INTEGRITY OK";
     public final static String jftfIntegritySysvarRepaired = "SYS_VAR INTEGRITY REPAIRED";
     public final static String jftfIntegritySysvarNotOk = "SYS_VAR INTEGRITY NOT OK";
+    public final static String jftfIntegrityConfigurationOK = "CONFIGURATION INTEGRITY OK";
+    public final static String jftfIntegrityConfigurationRepaired = "CONFIGURATION INTEGRITY REPAIRED";
+    public final static String jftfIntegrityConfigurationNotOk = "CONFIGURATION INTEGRITY NOT OK";
 
     protected final void setupEnvironment(){
         this.generateJftfHomeDirectory();
@@ -43,12 +47,15 @@ public abstract class ControlIO extends JftfModule implements IControlIO {
         this.populateJftfDirectoriesList();
         this.setupConfigurationManager();
         this.exportSystemVariables();
+        super.attachControlIO(this);
+        super.attachLogger(this.attachedLoggingContextInformation);
+        this.checkJftfEnvironmentIntegrity();
     }
 
     protected final void exportSystemVariables(){
         try {
             System.setProperty(jftfLogDirectorySystemVariableKey, this.generateJftfLogDirectoryPath().toString());
-            System.setProperty(jftfLogSyslogServerIpSystemVariableKey, "localhost");
+            System.setProperty(jftfLogSyslogServerIpSystemVariableKey, this.getConfigurationManager().getProperty(ConfigurationManager.loggerConfigurationName,ConfigurationManager.groupLoggerIp,ConfigurationManager.keyLoggerSyslogServerIp));
         }
         catch (NullPointerException e){
             System.err.println("(CRITICAL) One of the system variable key/value is null!");
@@ -254,6 +261,37 @@ public abstract class ControlIO extends JftfModule implements IControlIO {
         return corruptedSysvarList;
     }
 
+    protected final List<String> checkConfigurationFilesIntegrity(){
+        logger.LogInfo("Checking configuration files integrity");
+        Map<Path,Boolean> configurationFilesIntegrityMap = this.configurationManager.checkConfigurationFilesIntegrity();
+        List<String> corruptedConfigurationFilesList = new ArrayList<>();
+        if(configurationFilesIntegrityMap.containsValue(Boolean.FALSE)){
+            logger.LogError("Configuration files integrity NOT OK! Attempting repair...");
+            this.configurationManager.initConfigurationManager();
+        }
+        else{
+            logger.LogInfo("Configuration files integrity OK!");
+            corruptedConfigurationFilesList.add(jftfIntegrityConfigurationOK);
+            return corruptedConfigurationFilesList;
+        }
+        configurationFilesIntegrityMap = this.configurationManager.checkConfigurationFilesIntegrity();
+        if(configurationFilesIntegrityMap.containsValue(Boolean.FALSE)){
+            logger.LogError("Failed to repair configuration files integrity!");
+            for( Map.Entry<Path,Boolean> entry : configurationFilesIntegrityMap.entrySet()){
+                if(entry.getValue() == Boolean.FALSE){
+                    corruptedConfigurationFilesList.add(entry.getKey().toString());
+                }
+            }
+            logger.LogError(String.format("Corrupted configuration files %s",corruptedConfigurationFilesList));
+            corruptedConfigurationFilesList.add(0,jftfIntegrityConfigurationNotOk);
+        }
+        else{
+            logger.LogInfo("Configuration files integrity repaired!");
+            corruptedConfigurationFilesList.add(jftfIntegrityConfigurationRepaired);
+        }
+        return corruptedConfigurationFilesList;
+    }
+
     @Override
     public Path getJftfHomeDirectoryPath() {
         return this.generateJftfHomeDirectoryPath();
@@ -278,10 +316,23 @@ public abstract class ControlIO extends JftfModule implements IControlIO {
     @Override
     public Map<String, List<String>> checkJftfEnvironmentIntegrity(){
         logger.LogInfo("Checking JFTF environment integrity");
-        Map<String, List<String>> JftfIntegrityMap = new HashMap<>();
-        JftfIntegrityMap.put("DIRECTORY",this.checkDirectoryIntegrity());
-        JftfIntegrityMap.put("SYS_VAR",this.checkSystemVariablesIntegrity());
-        return JftfIntegrityMap;
+        Map<String, List<String>> jftfIntegrityMap = new HashMap<>();
+        jftfIntegrityMap.put("DIRECTORY",this.checkDirectoryIntegrity());
+        jftfIntegrityMap.put("SYS_VAR",this.checkSystemVariablesIntegrity());
+        jftfIntegrityMap.put("CONFIG",this.checkConfigurationFilesIntegrity());
+        logger.LogInfo("Checked JFTF environment integrity");
+        Boolean jftfIntegrityStatus = !(jftfIntegrityMap.get("DIRECTORY").contains(jftfIntegrityDirectoryNotOk) || jftfIntegrityMap.get("SYS_VAR").contains(jftfIntegritySysvarNotOk) || jftfIntegrityMap.get("CONFIG").contains(jftfIntegrityConfigurationNotOk));
+        if(jftfIntegrityStatus){
+            logger.LogInfo("JFTF integrity status check successful!");
+        }
+        else{
+            logger.LogError("JFTF integrity status check unsuccessful!");
+            logger.LogError(jftfIntegrityMap.toString());
+            System.err.println("(CRITICAL) JFTF integrity status check unsuccessful!");
+            System.err.println(String.format("(CRITICAL) %s",jftfIntegrityMap));
+            System.exit(2);
+        }
+        return jftfIntegrityMap;
     }
 
     public static Path generateJavaLogFile(String currentContextApplicationID){

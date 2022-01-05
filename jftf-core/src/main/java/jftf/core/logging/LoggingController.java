@@ -2,6 +2,8 @@ package jftf.core.logging;
 import ch.qos.logback.classic.LoggerContext;
 import ch.qos.logback.classic.joran.JoranConfigurator;
 import ch.qos.logback.core.joran.spi.JoranException;
+import jftf.core.JftfModule;
+import jftf.core.ioctl.ConfigurationManager;
 import jftf.core.ioctl.ControlIO;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -11,7 +13,7 @@ import java.nio.file.Path;
 import java.util.Objects;
 import java.util.logging.*;
 
-public class LoggingController {
+public class LoggingController extends JftfModule {
     private Logger LOGGER = null;
     private java.util.logging.Logger JAVA_LOGGER = null;
     private ch.qos.logback.classic.Logger rootLogger = null;
@@ -22,7 +24,14 @@ public class LoggingController {
     private static LoggingController loggerInstance;
     private static boolean internalLogs = false;
 
-    private LoggingController(LoggingContextInformation currentLoggerContextInformation) {
+    private LoggingController(LoggingContextInformation currentLoggerContextInformation, Boolean overrideInternalLogsConfiguration) {
+        if(overrideInternalLogsConfiguration == Boolean.FALSE) {
+            if (Objects.equals(controlIO.getConfigurationManager().getProperty(ConfigurationManager.loggerConfigurationName, ConfigurationManager.groupLoggerBehaviour, ConfigurationManager.keyLoggerEnableDebug), "true")) {
+                enableInternalLogs();
+            } else if (Objects.equals(controlIO.getConfigurationManager().getProperty(ConfigurationManager.loggerConfigurationName, ConfigurationManager.groupLoggerBehaviour, ConfigurationManager.keyLoggerEnableDebug), "false")) {
+                disableInternalLogs();
+            }
+        }
         ControlIO.setLogApplicationNameSystemVariable(currentLoggerContextInformation);
         try {
             if(!Objects.equals(currentLoggerContextInformation.getApplicationID(), ""))
@@ -43,14 +52,14 @@ public class LoggingController {
 
     public static LoggingController LoggerFactory(LoggingContextInformation currentLoggerContextInformation){
         if(loggerInstance == null)
-            loggerInstance = new LoggingController(currentLoggerContextInformation);
+            loggerInstance = new LoggingController(currentLoggerContextInformation,Boolean.FALSE);
         return loggerInstance;
     }
 
     public static LoggingController LoggerFactory(LoggingContextInformation currentLoggerContextInformation, boolean internalLogs){
         if(loggerInstance == null) {
             LoggingController.internalLogs = internalLogs;
-            loggerInstance = new LoggingController(currentLoggerContextInformation);
+            loggerInstance = new LoggingController(currentLoggerContextInformation,Boolean.TRUE);
         }
         return loggerInstance;
     }
