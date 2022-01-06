@@ -1,13 +1,11 @@
 package jftf.core.ioctl;
 
-import jftf.core.logging.LoggingContextInformation;
-
 public final class ControlIOUnix extends ControlIO{
     private static final String jftfHomeDirectoryNameUnix = ".jftf";
 
-    public ControlIOUnix(LoggingContextInformation loggingContextInformation) {
+    public ControlIOUnix(String configLoggerGroup) {
         super.jftfHomeDirectoryName = jftfHomeDirectoryNameUnix;
-        super.attachedLoggingContextInformation = loggingContextInformation;
+        super.attachedConfigLoggerGroup = configLoggerGroup;
         super.setupEnvironment();
     }
 }

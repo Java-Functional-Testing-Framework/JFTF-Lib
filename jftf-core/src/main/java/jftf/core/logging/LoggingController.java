@@ -22,14 +22,28 @@ public class LoggingController extends JftfModule {
     private boolean faultMode = false;
     private String faultModeErrorMessage = "";
     private static LoggingController loggerInstance;
-    private static boolean internalLogs = false;
+    private static Boolean internalLogs = Boolean.FALSE;
+    private static Boolean enableLogging = Boolean.TRUE;
 
-    private LoggingController(LoggingContextInformation currentLoggerContextInformation, Boolean overrideInternalLogsConfiguration) {
+    private LoggingController(LoggingContextInformation currentLoggerContextInformation, Boolean overrideInternalLogsConfiguration, Boolean overrideEnableLoggingConfiguration) {
         if(overrideInternalLogsConfiguration == Boolean.FALSE) {
             if (Objects.equals(controlIO.getConfigurationManager().getProperty(ConfigurationManager.loggerConfigurationName, ConfigurationManager.groupLoggerBehaviour, ConfigurationManager.keyLoggerEnableDebug), "true")) {
                 enableInternalLogs();
             } else if (Objects.equals(controlIO.getConfigurationManager().getProperty(ConfigurationManager.loggerConfigurationName, ConfigurationManager.groupLoggerBehaviour, ConfigurationManager.keyLoggerEnableDebug), "false")) {
                 disableInternalLogs();
+            }
+            else{
+                disableInternalLogs();
+            }
+        }
+        if(overrideEnableLoggingConfiguration == Boolean.FALSE) {
+            if (Objects.equals(controlIO.getConfigurationManager().getProperty(ConfigurationManager.loggerConfigurationName, ConfigurationManager.groupLoggerBehaviour, ConfigurationManager.keyLoggerEnableLogging), "true")) {
+                enableLogging();
+            } else if (Objects.equals(controlIO.getConfigurationManager().getProperty(ConfigurationManager.loggerConfigurationName, ConfigurationManager.groupLoggerBehaviour, ConfigurationManager.keyLoggerEnableDebug), "false")) {
+                disableLogging();
+            }
+            else{
+                enableLogging();
             }
         }
         ControlIO.setLogApplicationNameSystemVariable(currentLoggerContextInformation);
@@ -52,14 +66,14 @@ public class LoggingController extends JftfModule {
 
     public static LoggingController LoggerFactory(LoggingContextInformation currentLoggerContextInformation){
         if(loggerInstance == null)
-            loggerInstance = new LoggingController(currentLoggerContextInformation,Boolean.FALSE);
+            loggerInstance = new LoggingController(currentLoggerContextInformation,Boolean.FALSE,Boolean.FALSE);
         return loggerInstance;
     }
 
-    public static LoggingController LoggerFactory(LoggingContextInformation currentLoggerContextInformation, boolean internalLogs){
+    public static LoggingController LoggerFactory(LoggingContextInformation currentLoggerContextInformation, Boolean internalLogs, Boolean enableLogging){
         if(loggerInstance == null) {
             LoggingController.internalLogs = internalLogs;
-            loggerInstance = new LoggingController(currentLoggerContextInformation,Boolean.TRUE);
+            loggerInstance = new LoggingController(currentLoggerContextInformation,internalLogs,enableLogging);
         }
         return loggerInstance;
     }
@@ -72,8 +86,16 @@ public class LoggingController extends JftfModule {
         internalLogs = true;
     }
 
+    public static void enableLogging(){
+        enableLogging = true;
+    }
+
+    public static void disableLogging(){
+        enableLogging = false;
+    }
+
     public void LogDebug(String logMessage){
-        if(!this.faultMode){
+        if(!this.faultMode && enableLogging){
             this.LOGGER.debug(logMessage);
         }
         else{
@@ -82,46 +104,43 @@ public class LoggingController extends JftfModule {
     }
 
     public void LogInfo(String logMessage){
-        if(!this.faultMode){
+        if (!this.faultMode && enableLogging) {
             this.LOGGER.info(logMessage);
-        }
-        else{
-            this.JAVA_LOGGER.log(Level.INFO,logMessage);
+        } else {
+            this.JAVA_LOGGER.log(Level.INFO, logMessage);
         }
     }
 
     public void LogError(String logMessage){
-        if(!this.faultMode){
+        if (!this.faultMode && enableLogging) {
             this.LOGGER.error(logMessage);
-        }
-        else{
-            this.JAVA_LOGGER.log(Level.SEVERE,logMessage);
+        } else {
+            this.JAVA_LOGGER.log(Level.SEVERE, logMessage);
         }
     }
 
     public void LogToMinimumLogLevel(String logMessage){
-        if(!this.faultMode){
-            if(this.rootLogger.getLevel() == LoggingContextInformation.debugLogLevel)
+        if (!this.faultMode && enableLogging) {
+            if (this.rootLogger.getLevel() == LoggingContextInformation.debugLogLevel)
                 this.LogDebug(logMessage);
-            else if(this.rootLogger.getLevel() == LoggingContextInformation.infoLogLevel)
+            else if (this.rootLogger.getLevel() == LoggingContextInformation.infoLogLevel)
                 this.LogInfo(logMessage);
-            if(this.rootLogger.getLevel() == LoggingContextInformation.errorLogLevel)
+            if (this.rootLogger.getLevel() == LoggingContextInformation.errorLogLevel)
                 this.LogError(logMessage);
-        }
-        else{
+        } else {
             this.LogDebug(logMessage);
         }
     }
 
     private void announceContextRegistration(){
-        if(!this.faultMode){
+        if(!this.faultMode && enableLogging){
             if(internalLogs)
                 this.LogToMinimumLogLevel(String.format("Shifted to attached logging context for application ID: '%s' | Log level: '%s' | Appender type: '%s' (INTERNAL / IGNORE)'", this.currentLoggerContextInformation.getApplicationID(),this.currentLoggerContextInformation.getLogLevel().levelStr,this.currentLoggerContextInformation.getAppender()));
         }
     }
 
     private void announceNewContextRegistration(LoggingContextInformation newContextInformation){
-        if(!this.faultMode){
+        if(!this.faultMode && enableLogging){
             if(internalLogs)
                 this.LogToMinimumLogLevel(String.format("Shifted to new logging context for application ID: '%s' | Log level: '%s' | Appender type: '%s' (INTERNAL / IGNORE)", this.currentLoggerContextInformation.getApplicationID(),newContextInformation.getLogLevel().levelStr,newContextInformation.getAppender()));
         }
@@ -168,7 +187,7 @@ public class LoggingController extends JftfModule {
     }
 
     private void shiftToContextInformationLogLevel(){
-        if(!this.faultMode){
+        if(!this.faultMode && enableLogging){
             if(this.rootLogger.getLevel() != this.currentLoggerContextInformation.getLogLevel()) {
                 if(internalLogs)
                     this.LogInfo(String.format("Shifting log level for logging context: '%s' --> '%s' (INTERNAL / IGNORE)", this.rootLogger.getLevel().levelStr, this.currentLoggerContextInformation.getLogLevel().levelStr));
@@ -201,7 +220,7 @@ public class LoggingController extends JftfModule {
     }
 
     private void shiftToContextInformationAppender(){
-        if(!this.faultMode){
+        if(!this.faultMode && enableLogging){
             JoranConfigurator jc = new JoranConfigurator();
             jc.setContext(this.currentLoggerContext);
             this.currentLoggerContext.reset();
@@ -217,7 +236,7 @@ public class LoggingController extends JftfModule {
     }
 
     private void shiftToAppender(LoggingContextInformation newContextInformation){
-        if(!this.faultMode){
+        if(!this.faultMode && enableLogging){
             JoranConfigurator jc = new JoranConfigurator();
             jc.setContext(this.currentLoggerContext);
             this.currentLoggerContext.reset();
@@ -233,7 +252,7 @@ public class LoggingController extends JftfModule {
     }
 
     public void shiftToAttachedContextInformation(){
-        if(!this.faultMode) {
+        if(!this.faultMode && enableLogging) {
             if(internalLogs)
                 this.LogToMinimumLogLevel(String.format("Shifting to attached context information! Log level: '%s' | Appender type: '%s' (INTERNAL / IGNORE)",this.currentLoggerContextInformation.getLogLevel(),this.currentLoggerContextInformation.getAppender()));
             this.shiftToContextInformationAppender();
@@ -242,7 +261,7 @@ public class LoggingController extends JftfModule {
     }
 
     public void shiftToNewContextInformation(LoggingContextInformation newContextInformation){
-        if(!this.faultMode) {
+        if(!this.faultMode && enableLogging) {
             if(internalLogs)
                 this.LogToMinimumLogLevel(String.format("Shifting to new logging context information! Log level: '%s' | Appender type: '%s' (INTERNAL / IGNORE)",newContextInformation.getLogLevel(),newContextInformation.getAppender()));
             this.shiftToAppender(newContextInformation);
@@ -251,7 +270,7 @@ public class LoggingController extends JftfModule {
     }
 
     public void attachNewContextInformation(LoggingContextInformation newContextInformation){
-        if(!this.faultMode) {
+        if(!this.faultMode && enableLogging) {
             newContextInformation.setApplicationID(this.currentLoggerContextInformation.getApplicationID());
             if(internalLogs)
                 this.LogToMinimumLogLevel(String.format("New logging context information attached to logger! Log level: '%s' | Appender type: '%s' (INTERNAL / IGNORE)",newContextInformation.getLogLevel(),newContextInformation.getAppender()));

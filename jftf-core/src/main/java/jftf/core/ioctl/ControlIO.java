@@ -2,6 +2,7 @@ package jftf.core.ioctl;
 
 import jftf.core.JftfModule;
 import jftf.core.logging.LoggingContextInformation;
+import jftf.core.logging.LoggingController;
 
 import java.io.IOException;
 import java.nio.file.*;
@@ -13,7 +14,7 @@ public abstract class ControlIO extends JftfModule implements IControlIO {
     protected static String osGenericHomeDirectoryURI = null;
     protected static String osGenericJavaLogDirectory = System.getProperty("java.io.tmpdir");
     private static final SimpleDateFormat javaLogFileTimestampFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH-mm-ss");
-    protected LoggingContextInformation attachedLoggingContextInformation = null;
+    protected String attachedConfigLoggerGroup = null;
     protected String jftfHomeDirectoryName = null;
     protected String jftfLogDirectoryName = "logs";
     protected String jftfTestCasesDirectoryName = "test_cases";
@@ -48,8 +49,20 @@ public abstract class ControlIO extends JftfModule implements IControlIO {
         this.setupConfigurationManager();
         this.exportSystemVariables();
         super.attachControlIO(this);
-        super.attachLogger(this.attachedLoggingContextInformation);
+        this.setupLogger();
         this.checkJftfEnvironmentIntegrity();
+    }
+
+    protected void setupLogger(){
+        if(!Objects.equals(this.configurationManager.getProperty(ConfigurationManager.loggerConfigurationName, this.attachedConfigLoggerGroup, ConfigurationManager.keyLoggerAppId), ConfigurationManager.valueNotFound)){
+            String appId = this.configurationManager.getProperty(ConfigurationManager.loggerConfigurationName,this.attachedConfigLoggerGroup,ConfigurationManager.keyLoggerAppId);
+            String logLevel = this.configurationManager.getProperty(ConfigurationManager.loggerConfigurationName,this.attachedConfigLoggerGroup,ConfigurationManager.keyLoggerLogLevel);
+            String appender = this.configurationManager.getProperty(ConfigurationManager.loggerConfigurationName,this.attachedConfigLoggerGroup,ConfigurationManager.keyLoggerAppender);
+            super.attachLogger(LoggingController.LoggerFactory(new LoggingContextInformation(appId,logLevel,appender)));
+        }
+        else{
+            super.attachLogger(LoggingController.LoggerFactory(new LoggingContextInformation(this.attachedConfigLoggerGroup,LoggingContextInformation.infoLogLevel,LoggingContextInformation.multiAppender)));
+        }
     }
 
     protected final void exportSystemVariables(){

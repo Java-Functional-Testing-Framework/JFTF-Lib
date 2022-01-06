@@ -1,5 +1,6 @@
 package jftf.core.ioctl;
 
+import jftf.core.logging.LoggingContextInformation;
 import org.apache.commons.configuration2.*;
 import org.apache.commons.configuration2.builder.FileBasedConfigurationBuilder;
 import org.apache.commons.configuration2.builder.fluent.Parameters;
@@ -31,12 +32,19 @@ public class ConfigurationManager  {
     private final static List<String> validConfigurationNames = List.of(daemonConfigurationName,loggerConfigurationName);
     public final static String groupLoggerBehaviour = "behaviour";
     public final static String groupLoggerIp = "ip";
+    public final static String groupLoggerDaemonContextInformation = "daemon_ctx_info";
     public final static String keyLoggerEnableDebug = "enable_debug";
     private final static Boolean defaultValueLoggerEnableDebug = Boolean.FALSE;
     public final static String keyLoggerSyslogServerIp = "syslog_server_ip";
     private final static String defaultValueLoggerSyslogServerIp = "localhost";
     public final static String keyLoggerEnableLogging = "enable_logging";
-    private final static Boolean defaultValueEnableLogging = Boolean.FALSE;
+    private final static Boolean defaultValueEnableLogging = Boolean.TRUE;
+    public final static String keyLoggerAppId = "app_id";
+    public final static String keyLoggerLogLevel = "log_level";
+    private final static String defaultValueLoggerLogLevel = LoggingContextInformation.infoLogLevel.toString();
+    public final static String keyLoggerAppender = "appender";
+    private final static String defaultValueLoggerAppender = LoggingContextInformation.multiAppender;
+    private final static String defaultValueLoggerDaemonAppId = "jftfDaemon";
     private final static Map<String,List<String>> loggerConfigurationMap = new HashMap<>();
     private final static Map<String,List<String>> daemonConfigurationMap = new HashMap<>();
     public final static String valueNotFound = "N/A";
@@ -142,6 +150,7 @@ public class ConfigurationManager  {
     private void populateConfigurationMaps(){
         loggerConfigurationMap.put(groupLoggerBehaviour,List.of(keyLoggerEnableDebug,keyLoggerEnableLogging));
         loggerConfigurationMap.put(groupLoggerIp,List.of(keyLoggerSyslogServerIp));
+        loggerConfigurationMap.put(groupLoggerDaemonContextInformation,List.of(keyLoggerAppId,keyLoggerLogLevel,keyLoggerAppender));
     }
 
     private void generateConfigurationFiles(){
@@ -180,6 +189,18 @@ public class ConfigurationManager  {
             Element keySyslogServerIp = document.createElement(keyLoggerSyslogServerIp);
             keySyslogServerIp.appendChild(document.createTextNode(defaultValueLoggerSyslogServerIp));
             groupIp.appendChild(keySyslogServerIp);
+
+            Element groupDaemonContextInformation = document.createElement(groupLoggerDaemonContextInformation);
+            rootElement.appendChild(groupDaemonContextInformation);
+            Element keyDaemonAppId = document.createElement(keyLoggerAppId);
+            keyDaemonAppId.appendChild(document.createTextNode(defaultValueLoggerDaemonAppId));
+            Element keyDaemonLogLevel = document.createElement(keyLoggerLogLevel);
+            keyDaemonLogLevel.appendChild(document.createTextNode(defaultValueLoggerLogLevel));
+            Element keyDaemonAppender = document.createElement(keyLoggerAppender);
+            keyDaemonAppender.appendChild(document.createTextNode(defaultValueLoggerAppender));
+            groupDaemonContextInformation.appendChild(keyDaemonAppId);
+            groupDaemonContextInformation.appendChild(keyDaemonLogLevel);
+            groupDaemonContextInformation.appendChild(keyDaemonAppender);
 
             TransformerFactory transformerFactory = TransformerFactory.newInstance();
             Transformer transformer = transformerFactory.newTransformer();

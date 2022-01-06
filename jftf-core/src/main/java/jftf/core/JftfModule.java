@@ -7,10 +7,11 @@ import jftf.core.logging.LoggingController;
 public abstract class JftfModule {
     protected static LoggingController logger = null;
     protected static ControlIO controlIO = null;
+    protected LoggingContextInformation attachedLoggingContextInformation = null;
 
-    protected void attachLogger(LoggingContextInformation loggingContextInformation){
+    protected void attachLogger(LoggingController loggerInstance){
         if(logger == null && controlIO != null) {
-            logger = LoggingController.LoggerFactory(loggingContextInformation);
+            logger = loggerInstance;
         }
     }
 
@@ -18,5 +19,9 @@ public abstract class JftfModule {
         if(controlIO == null) {
             controlIO = controlIOInstance;
         }
+    }
+
+    public void attachLoggingContextInformation(LoggingContextInformation loggingContextInformation){
+        attachedLoggingContextInformation = loggingContextInformation;
     }
 }
