@@ -95,27 +95,32 @@ public class LoggingController extends JftfModule {
     }
 
     public void LogDebug(String logMessage){
-        if(!this.faultMode && enableLogging){
-            this.LOGGER.debug(logMessage);
-        }
-        else{
-            this.JAVA_LOGGER.log(Level.FINEST,logMessage);
+        if(enableLogging) {
+            if (!this.faultMode) {
+                this.LOGGER.debug(logMessage);
+            } else {
+                this.JAVA_LOGGER.log(Level.FINEST, logMessage);
+            }
         }
     }
 
     public void LogInfo(String logMessage){
-        if (!this.faultMode && enableLogging) {
-            this.LOGGER.info(logMessage);
-        } else {
-            this.JAVA_LOGGER.log(Level.INFO, logMessage);
+        if(enableLogging) {
+            if (!this.faultMode) {
+                this.LOGGER.info(logMessage);
+            } else {
+                this.JAVA_LOGGER.log(Level.INFO, logMessage);
+            }
         }
     }
 
     public void LogError(String logMessage){
-        if (!this.faultMode && enableLogging) {
-            this.LOGGER.error(logMessage);
-        } else {
-            this.JAVA_LOGGER.log(Level.SEVERE, logMessage);
+        if(enableLogging) {
+            if (!this.faultMode) {
+                this.LOGGER.error(logMessage);
+            } else {
+                this.JAVA_LOGGER.log(Level.SEVERE, logMessage);
+            }
         }
     }
 
