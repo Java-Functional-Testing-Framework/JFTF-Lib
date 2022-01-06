@@ -35,7 +35,7 @@ class LoggingControllerFactoryTest {
             System.err.println("Failed to redirect console out into temp file!");
             e.printStackTrace();
         }
-        this.Logger = LoggingController.LoggerFactory(new LoggingContextInformation(loggerApplicationID,LoggingContextInformation.defaultLogLevel,LoggingContextInformation.defaultAppender),true);
+        this.Logger = LoggingController.LoggerFactory(new LoggingContextInformation(loggerApplicationID,LoggingContextInformation.defaultLogLevel,LoggingContextInformation.defaultAppender),true,true);
     }
 
     private String readConsoleOut(){

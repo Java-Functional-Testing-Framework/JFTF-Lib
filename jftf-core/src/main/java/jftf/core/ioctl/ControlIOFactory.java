@@ -1,13 +1,28 @@
 package jftf.core.ioctl;
 
 public final class ControlIOFactory {
-    public static ControlIO getControlIO(){
+    private static ControlIO controlIO = null;
+
+    public static ControlIO getControlIO(String configLoggerGroup){
         if(OsUtils.isLinux()){
-            return new ControlIOUnix();
+            if(controlIO == null)
+                controlIO = new ControlIOUnix(configLoggerGroup);
+            return controlIO;
         }
         else if(OsUtils.isWindows()){
-            return new ControIOWindows();
+            if(controlIO == null)
+                controlIO = new ControlIOWindows(configLoggerGroup);
+            return controlIO;
         }
+        System.err.println("(CRITICAL) Operating system is not supported!");
+        System.exit(2);
         return null;
+    }
+
+    public static ControlIO getControlIO(){
+        if(controlIO != null){
+            return controlIO;
+        }
+        return  null;
     }
 }

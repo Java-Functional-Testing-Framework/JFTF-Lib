@@ -37,6 +37,15 @@ public class LoggingContextInformation {
         }
     }
 
+    public LoggingContextInformation(String currentApplicationID, String baseLogLevel, String baseAppender) {
+        this.currentApplicationID = currentApplicationID;
+        if(validLogLevels.contains(Level.toLevel(baseLogLevel)))
+            this.baseLogLevel = Level.toLevel(baseLogLevel);
+        if(validAppenders.contains(baseAppender)){
+            this.baseAppender = baseAppender;
+        }
+    }
+
     public LoggingContextInformation(Level baseLogLevel, String baseAppender) {
         if(validLogLevels.contains(baseLogLevel))
             this.baseLogLevel = baseLogLevel;

@@ -3,6 +3,7 @@ package jftf.core.ioctl;
 public final class OsUtils
 {
     private static String OS = null;
+
     public static String getOsName()
     {
         try {
@@ -16,6 +17,7 @@ public final class OsUtils
         }
         return OS;
     }
+
     public static boolean isWindows()
     {
         return getOsName().startsWith("Windows");
