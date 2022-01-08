@@ -1,0 +1,33 @@
+plugins {
+    id 'java'
+    id 'application'
+}
+
+version '1.0'
+group 'org.jftf.lib'
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.7.0'
+    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.7.0'
+    implementation 'info.picocli:picocli:4.6.2'
+    implementation project(':jftf-core')
+}
+
+test {
+    useJUnitPlatform()
+}
+
+application {
+    mainModule = 'jftf.lib.jtest'
+    mainClass = 'jftf.lib.jtest.JftfRunner'
+}
+
+java {
+    modularity.inferModulePath = true
+    sourceCompatibility = JavaVersion.VERSION_11
+    targetCompatibility = JavaVersion.VERSION_11
+}
