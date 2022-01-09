@@ -21,18 +21,22 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
 
-public class ConfigurationManager  {
+public final class ConfigurationManager  {
     private CombinedConfiguration jftfModuleConfiguration;
+    private final Path jftfCmdbConfigurationFilePath;
     private final Path jftfDaemonConfigurationFilePath;
     private final Path jftfLoggerConfigurationFilePath;
     private final List<Path> jftfConfigurationFilesPathList;
     private static ConfigurationManager configurationManagerInstance = null;
     public final static String daemonConfigurationName = "DAEMON_CONFIG";
     public final static String loggerConfigurationName = "LOGGER_CONFIG";
-    private final static List<String> validConfigurationNames = List.of(daemonConfigurationName,loggerConfigurationName);
+    public final static String cmdbConfigurationName = "CMDB_CONFIG";
+    private final static List<String> validConfigurationNames = List.of(daemonConfigurationName,loggerConfigurationName,cmdbConfigurationName);
+    // LOGGER CONFIG
     public final static String groupLoggerBehaviour = "behaviour";
     public final static String groupLoggerIp = "ip";
     public final static String groupLoggerDaemonContextInformation = "daemon_ctx_info";
+    public final static String groupLoggerTestAppContextInformation = "jftf_test_ctx_info";
     public final static String keyLoggerEnableDebug = "enable_debug";
     private final static Boolean defaultValueLoggerEnableDebug = Boolean.FALSE;
     public final static String keyLoggerSyslogServerIp = "syslog_server_ip";
@@ -45,15 +49,37 @@ public class ConfigurationManager  {
     public final static String keyLoggerAppender = "appender";
     private final static String defaultValueLoggerAppender = LoggingContextInformation.multiAppender;
     private final static String defaultValueLoggerDaemonAppId = "jftfDaemon";
+    private final static String defaultValueLoggerTestAppId = "jftfTestApp";
+    // CMDB_CONFIG
+    public final static String groupCmdbCredentials = "credentials";
+    public final static String keyCmdbIp = "ip";
+    private final static String defaultValueCmdbIp = "localhost";
+    public final static String keyCmdbUsername = "username";
+    private final static String defaultValueCmdbUsername = "jftf";
+    public final static String keyCmdbPassword = "password";
+    private final static String defaultValueCmdbPassword = "";
+    public final static String keyCmdbName = "db_name";
+    private final static String defaultValueCmdbName = "jftf_cmdb";
+
+
     private final static Map<String,List<String>> loggerConfigurationMap = new HashMap<>();
     private final static Map<String,List<String>> daemonConfigurationMap = new HashMap<>();
+    private final static Map<String,List<String>> cmdbConfigurationMap = new HashMap<>();
     public final static String valueNotFound = "N/A";
 
-    private ConfigurationManager(Path jftfDaemonConfigurationFilePath, Path jftfLoggerConfigurationFilePath){
+    private ConfigurationManager(Path jftfCmdbConfigurationFilePath, Path jftfDaemonConfigurationFilePath, Path jftfLoggerConfigurationFilePath){
+        this.jftfCmdbConfigurationFilePath = jftfCmdbConfigurationFilePath;
         this.jftfDaemonConfigurationFilePath = jftfDaemonConfigurationFilePath;
         this.jftfLoggerConfigurationFilePath = jftfLoggerConfigurationFilePath;
-        jftfConfigurationFilesPathList = List.of(this.jftfDaemonConfigurationFilePath,this.jftfLoggerConfigurationFilePath);
+        jftfConfigurationFilesPathList = List.of(this.jftfCmdbConfigurationFilePath,this.jftfDaemonConfigurationFilePath,this.jftfLoggerConfigurationFilePath);
         this.initConfigurationManager();
+    }
+
+    public static ConfigurationManager ConfigurationManagerFactory(Path jftfCmdbConfigurationFilePath, Path jftfDaemonConfigurationFilePath, Path jftfLoggerConfigurationFilePath){
+        if(configurationManagerInstance == null){
+            configurationManagerInstance = new ConfigurationManager(jftfCmdbConfigurationFilePath,jftfDaemonConfigurationFilePath,jftfLoggerConfigurationFilePath);
+        }
+        return configurationManagerInstance;
     }
 
     public void initConfigurationManager(){
@@ -75,6 +101,9 @@ public class ConfigurationManager  {
             }
             else if(Objects.equals(configurationName, daemonConfigurationName)){
                 return this.getPropertyMapCheck(configurationName, configurationGroup, configurationKey, daemonConfigurationMap);
+            }
+            else if(Objects.equals(configurationName, cmdbConfigurationName)){
+                return this.getPropertyMapCheck(configurationName, configurationGroup, configurationKey, cmdbConfigurationMap);
             }
         }
         return valueNotFound;
@@ -102,6 +131,9 @@ public class ConfigurationManager  {
             else if(Objects.equals(configurationName, daemonConfigurationName)){
                 return setPropertyMapCheck(configurationName, configurationGroup, configurationKey, configurationValue, daemonConfigurationMap);
             }
+            else if(Objects.equals(configurationName, daemonConfigurationName)){
+                return setPropertyMapCheck(configurationName, configurationGroup, configurationKey, configurationValue, cmdbConfigurationMap);
+            }
         }
         return Boolean.FALSE;
     }
@@ -125,10 +157,13 @@ public class ConfigurationManager  {
         this.generateConfigurationFiles();
         Parameters loggerParameters = new Parameters();
         Parameters daemonParameters = new Parameters();
+        Parameters cmdbParameters = new Parameters();
         FileBasedConfigurationBuilder<XMLConfiguration> loggerFileBasedConfigurationBuilder = new FileBasedConfigurationBuilder<>(XMLConfiguration.class).configure(loggerParameters.xml().setFile(this.jftfLoggerConfigurationFilePath.toFile()));
         FileBasedConfigurationBuilder<XMLConfiguration> daemonFileBasedConfigurationBuilder = new FileBasedConfigurationBuilder<>(XMLConfiguration.class).configure(daemonParameters.xml().setFile(this.jftfDaemonConfigurationFilePath.toFile()));
+        FileBasedConfigurationBuilder<XMLConfiguration> cmdbFileBasedConfigurationBuilder = new FileBasedConfigurationBuilder<>(XMLConfiguration.class).configure(cmdbParameters.xml().setFile(this.jftfCmdbConfigurationFilePath.toFile()));
         loggerFileBasedConfigurationBuilder.setAutoSave(Boolean.TRUE);
         daemonFileBasedConfigurationBuilder.setAutoSave(Boolean.TRUE);
+        cmdbFileBasedConfigurationBuilder.setAutoSave(Boolean.TRUE);
         try {
             this.jftfModuleConfiguration.addConfiguration(loggerFileBasedConfigurationBuilder.getConfiguration(),loggerConfigurationName);
         }
@@ -145,12 +180,22 @@ public class ConfigurationManager  {
             e.printStackTrace();
             System.exit(3);
         }
+        try {
+            this.jftfModuleConfiguration.addConfiguration(cmdbFileBasedConfigurationBuilder.getConfiguration(),cmdbConfigurationName);
+        }
+        catch (ConfigurationException e){
+            System.err.println("(CRITICAL) Failed to load the CMDB configuration XML file!");
+            e.printStackTrace();
+            System.exit(3);
+        }
     }
 
     private void populateConfigurationMaps(){
         loggerConfigurationMap.put(groupLoggerBehaviour,List.of(keyLoggerEnableDebug,keyLoggerEnableLogging));
         loggerConfigurationMap.put(groupLoggerIp,List.of(keyLoggerSyslogServerIp));
         loggerConfigurationMap.put(groupLoggerDaemonContextInformation,List.of(keyLoggerAppId,keyLoggerLogLevel,keyLoggerAppender));
+        loggerConfigurationMap.put(groupLoggerTestAppContextInformation,List.of(keyLoggerAppId,keyLoggerLogLevel,keyLoggerAppender));
+        cmdbConfigurationMap.put(groupCmdbCredentials,List.of(keyCmdbName,keyCmdbIp,keyCmdbUsername,keyCmdbPassword));
     }
 
     private void generateConfigurationFiles(){
@@ -162,6 +207,9 @@ public class ConfigurationManager  {
                 }
                 else if(ConfigFilePath == this.jftfDaemonConfigurationFilePath){
                     this.generateDaemonConfigurationFile();
+                }
+                else if(ConfigFilePath == this.jftfCmdbConfigurationFilePath){
+                    this.generateCmdbConfigurationFile();
                 }
             }
         }
@@ -201,6 +249,18 @@ public class ConfigurationManager  {
             groupDaemonContextInformation.appendChild(keyDaemonAppId);
             groupDaemonContextInformation.appendChild(keyDaemonLogLevel);
             groupDaemonContextInformation.appendChild(keyDaemonAppender);
+
+            Element groupTestAppContextInformation = document.createElement(groupLoggerTestAppContextInformation);
+            rootElement.appendChild(groupTestAppContextInformation);
+            Element keyTestAppAppId = document.createElement(keyLoggerAppId);
+            keyTestAppAppId.appendChild(document.createTextNode(defaultValueLoggerTestAppId));
+            Element keyTestAppLogLevel = document.createElement(keyLoggerLogLevel);
+            keyTestAppLogLevel.appendChild(document.createTextNode(defaultValueLoggerLogLevel));
+            Element keyTestAppAppender = document.createElement(keyLoggerAppender);
+            keyTestAppAppender.appendChild(document.createTextNode(defaultValueLoggerAppender));
+            groupTestAppContextInformation.appendChild(keyTestAppAppId);
+            groupTestAppContextInformation.appendChild(keyTestAppLogLevel);
+            groupTestAppContextInformation.appendChild(keyTestAppAppender);
 
             TransformerFactory transformerFactory = TransformerFactory.newInstance();
             Transformer transformer = transformerFactory.newTransformer();
@@ -256,10 +316,49 @@ public class ConfigurationManager  {
         }
     }
 
-    public static ConfigurationManager ConfigurationManagerFactory(Path jftfDaemonConfigurationFilePath, Path jftfLoggerConfigurationFilePath){
-        if(configurationManagerInstance == null){
-            configurationManagerInstance = new ConfigurationManager(jftfDaemonConfigurationFilePath,jftfLoggerConfigurationFilePath);
+    private void generateCmdbConfigurationFile(){
+        DocumentBuilderFactory documentBuilderFactory = DocumentBuilderFactory.newInstance();
+        try {
+            DocumentBuilder documentBuilder = documentBuilderFactory.newDocumentBuilder();
+            Document document = documentBuilder.newDocument();
+            Element rootElement = document.createElement(daemonConfigurationName.toLowerCase(Locale.ROOT));
+            document.appendChild(rootElement);
+
+            Element groupCredentials = document.createElement(groupCmdbCredentials);
+            rootElement.appendChild(groupCredentials);
+            Element keyIp = document.createElement(keyCmdbIp);
+            keyIp.appendChild(document.createTextNode(defaultValueCmdbIp));
+            Element keyName = document.createElement(keyCmdbName);
+            keyName.appendChild(document.createTextNode(defaultValueCmdbName));
+            Element keyUsername = document.createElement(keyCmdbUsername);
+            keyUsername.appendChild(document.createTextNode(defaultValueCmdbUsername));
+            Element keyPassword = document.createElement(keyCmdbPassword);
+            keyPassword.appendChild(document.createTextNode(defaultValueCmdbPassword));
+            groupCredentials.appendChild(keyIp);
+            groupCredentials.appendChild(keyName);
+            groupCredentials.appendChild(keyUsername);
+            groupCredentials.appendChild(keyPassword);
+
+            TransformerFactory transformerFactory = TransformerFactory.newInstance();
+            Transformer transformer = transformerFactory.newTransformer();
+            DOMSource source = new DOMSource(document);
+            StreamResult streamResult = new StreamResult(this.jftfCmdbConfigurationFilePath.toFile());
+            transformer.transform(source,streamResult);
         }
-        return configurationManagerInstance;
+        catch (ParserConfigurationException e){
+            System.err.println("(CRITICAL) XML Builder configuration error! (CMDB configuration XML)");
+            e.printStackTrace();
+            System.exit(3);
+        }
+        catch (TransformerConfigurationException e){
+            System.err.println("(CRITICAL) XML Transformer configuration error! (CMDB configuration XML)");
+            e.printStackTrace();
+            System.exit(3);
+        }
+        catch (TransformerException e){
+            System.err.println("(CRITICAL) Error while transforming DOM to XML file! (CMDB configuration XML)");
+            e.printStackTrace();
+            System.exit(3);
+        }
     }
 }

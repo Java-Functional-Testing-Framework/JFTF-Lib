@@ -19,6 +19,7 @@ public abstract class ControlIO extends JftfModule implements IControlIO {
     protected String jftfLogDirectoryName = "logs";
     protected String jftfTestCasesDirectoryName = "test_cases";
     protected String jftfConfigDirectoryName = "config";
+    protected String jftfConfigFileCmdbName = "jftf_cmdb_cfg.xml";
     protected String jftfConfigFileDaemonName = "jftf_daemon_cfg.xml";
     protected String jftfConfigFileLoggerName = "jftf_logger_cfg.xml";
     protected final String jftfLogDirectorySystemVariableKey = "JFTF_LOGS";
@@ -50,7 +51,6 @@ public abstract class ControlIO extends JftfModule implements IControlIO {
         this.exportSystemVariables();
         super.attachControlIO(this);
         this.setupLogger();
-        this.checkJftfEnvironmentIntegrity();
     }
 
     protected void setupLogger(){
@@ -205,9 +205,10 @@ public abstract class ControlIO extends JftfModule implements IControlIO {
     }
 
     protected final void setupConfigurationManager(){
+        Path cmdbConfigFilePath = Paths.get(this.generateJftfConfigDirectoryPath().toString(),jftfConfigFileCmdbName);
         Path daemonConfigFilePath = Paths.get(this.generateJftfConfigDirectoryPath().toString(),jftfConfigFileDaemonName);
         Path loggerConfigFilePath = Paths.get(this.generateJftfConfigDirectoryPath().toString(),jftfConfigFileLoggerName);
-        this.configurationManager = ConfigurationManager.ConfigurationManagerFactory(daemonConfigFilePath,loggerConfigFilePath);
+        this.configurationManager = ConfigurationManager.ConfigurationManagerFactory(cmdbConfigFilePath,daemonConfigFilePath,loggerConfigFilePath);
     }
 
     protected final List<String> checkDirectoryIntegrity(){

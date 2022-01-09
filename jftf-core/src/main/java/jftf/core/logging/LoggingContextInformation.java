@@ -6,7 +6,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Objects;
 
-public class LoggingContextInformation {
+public final class LoggingContextInformation {
     public final static Level debugLogLevel = Level.DEBUG;
     public final static Level infoLogLevel = Level.INFO;
     public final static Level errorLogLevel = Level.ERROR;

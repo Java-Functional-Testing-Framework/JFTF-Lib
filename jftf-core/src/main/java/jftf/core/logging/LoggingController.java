@@ -13,7 +13,7 @@ import java.nio.file.Path;
 import java.util.Objects;
 import java.util.logging.*;
 
-public class LoggingController extends JftfModule {
+public final class LoggingController extends JftfModule {
     private Logger LOGGER = null;
     private java.util.logging.Logger JAVA_LOGGER = null;
     private ch.qos.logback.classic.Logger rootLogger = null;
