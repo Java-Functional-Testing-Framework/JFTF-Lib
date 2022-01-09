@@ -1,4 +1,4 @@
-package jftf.lib.jtest;
+package jftf.lib.core;
 
 import jftf.core.JftfModule;
 

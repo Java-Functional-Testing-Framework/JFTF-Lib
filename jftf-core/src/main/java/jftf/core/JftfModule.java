@@ -39,7 +39,9 @@ public abstract class JftfModule {
         logger.LogInfo("Startup sequence is complete!");
         Runtime.getRuntime().addShutdownHook(new Thread(() -> {
             logger.LogDebug("Processing shutdown hook");
-            databaseDriver.closeConnection();
+            if(databaseDriver != null) {
+                databaseDriver.closeConnection();
+            }
             logger.LogDebug("Shutdown hook complete!");
         }));
     }

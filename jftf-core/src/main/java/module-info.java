@@ -1,4 +1,4 @@
-module jftf.core.daemon {
+module jftf.core {
     exports jftf.core;
     exports jftf.core.daemon;
     exports jftf.core.logging;

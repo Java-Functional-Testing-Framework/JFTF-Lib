@@ -60,8 +60,6 @@ public final class ConfigurationManager  {
     private final static String defaultValueCmdbPassword = "";
     public final static String keyCmdbName = "db_name";
     private final static String defaultValueCmdbName = "jftf_cmdb";
-
-
     private final static Map<String,List<String>> loggerConfigurationMap = new HashMap<>();
     private final static Map<String,List<String>> daemonConfigurationMap = new HashMap<>();
     private final static Map<String,List<String>> cmdbConfigurationMap = new HashMap<>();

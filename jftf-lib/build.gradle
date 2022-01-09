@@ -1,7 +1,8 @@
 plugins {
     id 'java'
-    id 'application'
 }
+
+apply plugin: 'java-library'
 
 version '1.0'
 group 'org.jftf.lib'
@@ -19,11 +20,6 @@ dependencies {
 
 test {
     useJUnitPlatform()
-}
-
-application {
-    mainModule = 'jftf.lib.jtest'
-    mainClass = 'jftf.lib.jtest.JftfRunner'
 }
 
 java {

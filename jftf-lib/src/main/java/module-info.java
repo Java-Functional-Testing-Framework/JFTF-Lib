@@ -1,7 +1,8 @@
-module jftj.lib.jtest {
-    exports jftf.lib.jtest;
-    requires jftf.core.daemon;
+module jftj.lib {
+    exports jftf.lib.core;
+    exports jftf.lib.tools.annotations;
+    requires jftf.core;
     requires info.picocli;
-    opens jftf.lib.jtest to info.picocli;
-    //exports jftf.lib.headers;
+    requires java.sql;
+    opens jftf.lib.core to info.picocli;
 }

@@ -1,4 +1,4 @@
-package jftf.lib.jtest;
+package jftf.lib.core;
 
 import java.nio.file.Path;
 
