@@ -24,11 +24,11 @@ test {
 
 application {
     mainModule = 'jftf.demos'
-    mainClass = 'jftf.demos.JftfTestBootstrapper'
+    mainClass = 'jftf.demos.LiveExample.JftfTestBootstrapper'
 }
 
-def jftfTestName = "JftfDemosBasicTest"
-def jftfTestGroup = "dev"
+def jftfTestName = "JftfDemosLiveExample"
+def jftfTestGroup = "production"
 def jftfTestCasePath = "${System.properties['user.home']}/.jftf/test_cases/${jftfTestGroup}/${jftfTestName}"
 
 jar {

@@ -1,9 +1,9 @@
-package jftf.demos;
+package jftf.demos.BasicTest;
 
 import jftf.lib.tools.annotations.*;
 import jftf.lib.tools.logger.JftfTestLogger;
 
-@TestCaseDev(featureGroup = "dev", testGroup = "examples", testVersion = "1.0")
+@TestCase(featureGroup = "dev", testGroup = "examples", testVersion = "1.0")
 public class JftfDemosBasicTest {
     private JftfTestLogger logger;
 
