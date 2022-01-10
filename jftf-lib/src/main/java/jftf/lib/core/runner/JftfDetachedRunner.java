@@ -1,8 +1,12 @@
-package jftf.lib.core;
+package jftf.lib.core.runner;
 
 import jftf.core.JftfModule;
 import jftf.core.ioctl.ConfigurationManager;
 import jftf.core.ioctl.DatabaseDriver;
+import jftf.lib.core.computer.JftfComputer;
+import jftf.lib.core.computer.JftfSequentialComputer;
+import jftf.lib.core.meta.JftfMetaPackager;
+import jftf.lib.core.meta.JftfTestReportInformation;
 import jftf.lib.tools.annotations.AfterTest;
 import jftf.lib.tools.annotations.BeforeTest;
 import jftf.lib.tools.annotations.Test;
@@ -27,7 +31,13 @@ public final class JftfDetachedRunner extends JftfRunner {
         this.testClasses = testClasses;
         this.jftfComputer = new JftfSequentialComputer();
         JftfModule.startupSequence(ConfigurationManager.groupLoggerTestAppContextInformation);
-        //DatabaseDriver.DatabaseDriverFactory();
+        DatabaseDriver.DatabaseDriverFactory();
+        JftfMetaPackager jftfMetaPackager = JftfMetaPackager.JftfMetaPackagerFactory();
+        if(jftfMetaPackager.lookupTestCase(jftfMetaPackager.generateTestCaseMetadata(testClasses)) == -1){
+            logger.LogError(String.format("No entry found for test case '%s' in the JFTF CMDB! Test case registration required!",this.testClasses.getSimpleName()));
+            System.err.printf("No entry found for test case '%s' in the JFTF CMDB! Test case registration required!%n",this.testClasses.getSimpleName());
+            System.exit(1);
+        }
         logger.LogDebug("Starting JFTF detached test runner");
         logger.LogDebug(String.format("Extracting methods from test case '%s'",this.testClasses.getSimpleName()));
         this.jftfComputer.setTestFixtures(this.extractTestFixtures());
@@ -45,6 +55,7 @@ public final class JftfDetachedRunner extends JftfRunner {
         logger.LogInfo("Test case execution complete!");
         this.packageReport();
         this.printStatus();
+        logger.LogDebug("End of JFTF detached test runner");
     }
 
     @Override

@@ -1,4 +1,4 @@
-package jftf.lib.core;
+package jftf.lib.core.meta;
 
 import java.sql.Time;
 import java.sql.Timestamp;

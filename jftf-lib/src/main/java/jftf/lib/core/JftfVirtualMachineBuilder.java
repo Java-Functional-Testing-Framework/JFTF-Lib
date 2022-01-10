@@ -1,6 +1,11 @@
 package jftf.lib.core;
 
 
+import jftf.lib.core.computer.JftfComputer;
+import jftf.lib.core.meta.JftfMetaPackager;
+import jftf.lib.core.runner.JftfDetachedRunner;
+import jftf.lib.core.runner.JftfRunner;
+
 import java.util.Objects;
 
 public class JftfVirtualMachineBuilder {
@@ -18,8 +23,8 @@ public class JftfVirtualMachineBuilder {
                     }
                 }
                 else if(cliExitCode == 10){
-                    System.out.println("Register");
-                    System.exit(0);
+                    JftfMetaPackager jftfMetaPackager = JftfMetaPackager.JftfMetaPackagerFactory();
+                    System.exit(jftfMetaPackager.registerTestCase(testClasses));
                 }
                 else{
                     System.exit(cliExitCode);

@@ -1,4 +1,6 @@
-package jftf.lib.core;
+package jftf.lib.core.computer;
+
+import jftf.lib.core.computer.JftfComputer;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -6,7 +8,7 @@ import java.lang.reflect.Parameter;
 import java.util.ArrayList;
 import java.util.List;
 
-public final class JftfSequentialComputer extends JftfComputer{
+public final class JftfSequentialComputer extends JftfComputer {
 
     @Override
     public void run() {

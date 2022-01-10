@@ -35,14 +35,16 @@ public abstract class JftfModule {
     }
 
     public static void startupSequence(String configLoggerGroup){
-        ControlIOFactory.getControlIO(configLoggerGroup).checkJftfEnvironmentIntegrity();
-        logger.LogInfo("Startup sequence is complete!");
-        Runtime.getRuntime().addShutdownHook(new Thread(() -> {
-            logger.LogDebug("Processing shutdown hook");
-            if(databaseDriver != null) {
-                databaseDriver.closeConnection();
-            }
-            logger.LogDebug("Shutdown hook complete!");
-        }));
+        if(controlIO == null) {
+            ControlIOFactory.getControlIO(configLoggerGroup).checkJftfEnvironmentIntegrity();
+            logger.LogInfo("Startup sequence is complete!");
+            Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+                logger.LogDebug("Processing shutdown hook");
+                if (databaseDriver != null) {
+                    databaseDriver.closeConnection();
+                }
+                logger.LogDebug("Shutdown hook complete!");
+            }));
+        }
     }
 }

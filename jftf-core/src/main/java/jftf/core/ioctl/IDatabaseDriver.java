@@ -21,6 +21,7 @@ public interface IDatabaseDriver {
     Boolean updateTestCase(int testId, String updateMode, Timestamp firstExecution, Timestamp lastExecution, Boolean executed);
     List<String> getTestCase(int testId);
     List<String> getTestCaseMetadata(int metadataId);
+    int lookupTestCaseMetadata(String testName, String featureGroup, String testGroup, Path testPath, String testVersion);
     int getTestCaseMetadataId(int testId);
     Boolean updateTestCaseMetadata(int testId, String testName, String featureGroup, String testGroup, Path testPath, String testVersion);
     List<Integer> getTestCaseIds();

@@ -1,4 +1,4 @@
-package jftf.lib.core;
+package jftf.lib.core.computer;
 
 import jftf.core.JftfModule;
 

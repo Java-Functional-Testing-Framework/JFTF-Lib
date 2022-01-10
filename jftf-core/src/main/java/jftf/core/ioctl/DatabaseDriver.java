@@ -34,6 +34,7 @@ public final class DatabaseDriver extends JftfModule implements IDatabaseDriver{
     private final static String sqlViewGetLastReportInformationId = "select testReportInformationId from getLastTestReportInformationId;";
     private final static String sqlSetViewMetadataId = "set @mId = ?;";
     private final static String sqlViewGetTestCaseMetadata = "select testName,featureGroup,testGroup,testPath,testVersion from getTestCaseMetadata;";
+    private final static String sqlLookupTestCaseMetadata = "select metadataId from TestCaseMetadata where testName = ? and featureGroup = ? and testGroup  = ? and testPath = ? and testVersion = ?;";
     private final static String sqlSetViewTestcaseId = "set @tId = ?;";
     private final static String sqlViewGetTestCase = "select metaDataId,firstExecution,lastExecution,executed from getTestCase;";
     private final static String sqlViewGetTestCaseIds = "select testId from getTestCaseIds;";
@@ -215,7 +216,7 @@ public final class DatabaseDriver extends JftfModule implements IDatabaseDriver{
 
     @Override
     public void closeConnection() {
-        logger.LogDebug("Closing database connection!");
+        logger.LogDebug("Closing database connection");
         if(this.getConnectionStatus() == Boolean.TRUE) {
             try {
                 this.databaseConnection.close();
@@ -393,6 +394,31 @@ public final class DatabaseDriver extends JftfModule implements IDatabaseDriver{
             System.exit(4);
         }
         return null;
+    }
+
+    @Override
+    public int lookupTestCaseMetadata(String testName, String featureGroup, String testGroup, Path testPath, String testVersion) {
+        try{
+            PreparedStatement lookupTestCaseMetadataPs = this.databaseConnection.prepareStatement(sqlLookupTestCaseMetadata);
+            lookupTestCaseMetadataPs.setString(1,testName);
+            lookupTestCaseMetadataPs.setString(2,featureGroup);
+            lookupTestCaseMetadataPs.setString(3,testGroup);
+            lookupTestCaseMetadataPs.setString(4,testPath.toString());
+            lookupTestCaseMetadataPs.setString(5,testVersion);
+            ResultSet resultSet = lookupTestCaseMetadataPs.executeQuery();
+            if(resultSet.first()){
+                return resultSet.getInt(1);
+            }
+            else{
+                return -1;
+            }
+        }
+        catch (SQLException e){
+            System.err.println("(CRITICAL) Failed to lookup test case metadata!");
+            DatabaseDriver.printSQLException(e);
+            System.exit(4);
+        }
+        return 0;
     }
 
     @Override

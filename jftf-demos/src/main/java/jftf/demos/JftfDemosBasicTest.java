@@ -3,6 +3,7 @@ package jftf.demos;
 import jftf.lib.tools.annotations.*;
 import static org.junit.jupiter.api.Assertions.*;
 
+@TestCase(featureGroup = "dev", testGroup = "libs", testVersion = "1.0")
 public class JftfDemosBasicTest{
     private String a;
 
