@@ -8,5 +8,6 @@ module jftj.lib {
     requires info.picocli;
     requires java.sql;
     requires org.reflections;
+    requires com.google.common;
     opens jftf.lib.core to info.picocli;
 }

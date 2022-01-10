@@ -1,6 +1,7 @@
 plugins {
     id 'java'
     id 'application'
+    id 'distribution'
 }
 
 version '1.0'
@@ -24,4 +25,27 @@ test {
 application {
     mainModule = 'jftf.demos'
     mainClass = 'jftf.demos.JftfTestBootstrapper'
+}
+
+def jftfTestName = "JftfDemosBasicTest"
+def jftfTestGroup = "dev"
+def jftfTestCasePath = "${System.properties['user.home']}/.jftf/test_cases/${jftfTestGroup}/${jftfTestName}"
+
+jar {
+    archiveName "${jftfTestName}.jar"
+}
+
+distributions {
+    main {
+        distributionBaseName = jftfTestName
+    }
+}
+
+startScripts {
+    applicationName = jftfTestName
+}
+
+tasks.register('copyTestToJftfTargetDirectory', Copy) {
+    from layout.buildDirectory.dir("install/${jftfTestName}")
+    into jftfTestCasePath
 }

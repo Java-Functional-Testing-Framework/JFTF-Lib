@@ -1,4 +1,4 @@
-module jftf.demos.main {
+module jftf.demos {
     requires jftj.lib;
     requires org.junit.jupiter.api;
     exports jftf.demos;
