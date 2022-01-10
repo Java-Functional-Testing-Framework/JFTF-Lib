@@ -20,6 +20,7 @@ public interface IDatabaseDriver {
     Boolean deleteTestCase(int testId);
     Boolean updateTestCase(int testId, String updateMode, Timestamp firstExecution, Timestamp lastExecution, Boolean executed);
     List<String> getTestCase(int testId);
+    int lookupTestCase(int metadataId);
     List<String> getTestCaseMetadata(int metadataId);
     int lookupTestCaseMetadata(String testName, String featureGroup, String testGroup, Path testPath, String testVersion);
     int getTestCaseMetadataId(int testId);

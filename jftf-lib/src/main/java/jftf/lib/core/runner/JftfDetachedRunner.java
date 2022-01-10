@@ -31,7 +31,6 @@ public final class JftfDetachedRunner extends JftfRunner {
         this.testClasses = testClasses;
         this.jftfComputer = new JftfSequentialComputer();
         JftfModule.startupSequence(ConfigurationManager.groupLoggerTestAppContextInformation);
-        DatabaseDriver.DatabaseDriverFactory();
         JftfMetaPackager jftfMetaPackager = JftfMetaPackager.JftfMetaPackagerFactory();
         if(jftfMetaPackager.lookupTestCase(jftfMetaPackager.generateTestCaseMetadata(testClasses)) == -1){
             logger.LogError(String.format("No entry found for test case '%s' in the JFTF CMDB! Test case registration required!",this.testClasses.getSimpleName()));
@@ -50,7 +49,7 @@ public final class JftfDetachedRunner extends JftfRunner {
     @Override
     public void run() {
         logger.LogInfo(String.format("Starting to execute test case '%s'",this.testClasses.getSimpleName()));
-        this.testReportInformation = new JftfTestReportInformation(0,new Timestamp(new Date().getTime()));
+        this.testReportInformation = new JftfTestReportInformation(new Timestamp(new Date().getTime()));
         this.jftfComputer.run();
         logger.LogInfo("Test case execution complete!");
         this.packageReport();
@@ -73,6 +72,8 @@ public final class JftfDetachedRunner extends JftfRunner {
             this.testReportInformation.setExecutionResult(JftfTestReportInformation.errorState);
         }
         logger.LogDebug("Test report packaging complete!");
+        JftfMetaPackager jftfMetaPackager = JftfMetaPackager.JftfMetaPackagerFactory();
+        jftfMetaPackager.insertTestReportInformation(this.testReportInformation);
     }
 
     @Override

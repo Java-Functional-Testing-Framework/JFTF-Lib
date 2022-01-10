@@ -12,6 +12,7 @@ import java.util.Set;
 public final class JftfMetaPackager extends JftfModule implements IJftfMetaPackager{
     private static JftfMetaPackager jftfMetaPackagerInstance = null;
     private static JftfTestCaseMetadata testCaseMetadata = null;
+    private int testId = -1;
     private JftfMetaPackager(){
         JftfModule.startupSequence(ConfigurationManager.groupLoggerTestAppContextInformation);
         DatabaseDriver.DatabaseDriverFactory();
@@ -42,8 +43,11 @@ public final class JftfMetaPackager extends JftfModule implements IJftfMetaPacka
 
     @Override
     public int lookupTestCase(JftfTestCaseMetadata jftfTestCaseMetadata) {
-        logger.LogInfo(String.format("Looking up test case '%s' in the JFTF CMDB",jftfTestCaseMetadata.getTestName()));
-        return databaseDriver.lookupTestCaseMetadata(jftfTestCaseMetadata.getTestName(),jftfTestCaseMetadata.getFeatureGroup(),jftfTestCaseMetadata.getTestGroup(),jftfTestCaseMetadata.getTestPath(),jftfTestCaseMetadata.getTestVersion());
+        if(testId == -1) {
+            logger.LogInfo(String.format("Looking up test case '%s' in the JFTF CMDB", jftfTestCaseMetadata.getTestName()));
+            testId = databaseDriver.lookupTestCaseMetadata(jftfTestCaseMetadata.getTestName(), jftfTestCaseMetadata.getFeatureGroup(), jftfTestCaseMetadata.getTestGroup(), jftfTestCaseMetadata.getTestPath(), jftfTestCaseMetadata.getTestVersion());
+        }
+        return testId;
     }
 
     @Override
@@ -80,5 +84,13 @@ public final class JftfMetaPackager extends JftfModule implements IJftfMetaPacka
             }
         }
         return testCaseMetadata;
+    }
+
+    @Override
+    public void insertTestReportInformation(JftfTestReportInformation jftfTestReportInformation) {
+        logger.LogInfo(String.format("Inserting test report information into JFTF CMDB for test Id '%s'",jftfTestReportInformation.getTestId()));
+        jftfTestReportInformation.setTestId(testId);
+        databaseDriver.insertTestReport(jftfTestReportInformation.getTestId(),jftfTestReportInformation.getStartupTimestamp(),jftfTestReportInformation.getEndTimestamp(),jftfTestReportInformation.getTestDuration(),jftfTestReportInformation.getErrorMessages(),jftfTestReportInformation.getLoggerOutput(), jftfTestReportInformation.getExecutionResult());
+        logger.LogInfo("Test report insertion complete!");
     }
 }

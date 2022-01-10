@@ -29,7 +29,7 @@ public class JftfTestReportInformation {
                 '}';
     }
 
-    public JftfTestReportInformation(int testId, Timestamp startupTimestamp){
+    public JftfTestReportInformation(Timestamp startupTimestamp){
         this.testId = testId;
         this.startupTimestamp = startupTimestamp;
     }

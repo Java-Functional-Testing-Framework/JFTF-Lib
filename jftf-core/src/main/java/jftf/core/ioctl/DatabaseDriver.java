@@ -37,6 +37,7 @@ public final class DatabaseDriver extends JftfModule implements IDatabaseDriver{
     private final static String sqlLookupTestCaseMetadata = "select metadataId from TestCaseMetadata where testName = ? and featureGroup = ? and testGroup  = ? and testPath = ? and testVersion = ?;";
     private final static String sqlSetViewTestcaseId = "set @tId = ?;";
     private final static String sqlViewGetTestCase = "select metaDataId,firstExecution,lastExecution,executed from getTestCase;";
+    private final static String sqlLookupTestCaseId = "select testId from TestCases where metaDataId = ?;";
     private final static String sqlViewGetTestCaseIds = "select testId from getTestCaseIds;";
     private final static String sqlSetViewTestReportId = "set @trId = ?;";
     private final static String sqlViewGetTestReportInformation = "select testReportInformationId, testId, startupTimestamp, endTimestamp, testDuration, errorMessages, loggerOutput, executionResult from getTestReportInformation;";
@@ -370,6 +371,27 @@ public final class DatabaseDriver extends JftfModule implements IDatabaseDriver{
     }
 
     @Override
+    public int lookupTestCase(int metadataId) {
+        try {
+            PreparedStatement lookupTestCaseIdPs = this.databaseConnection.prepareStatement(sqlLookupTestCaseId);
+            lookupTestCaseIdPs.setInt(1,metadataId);
+            ResultSet resultSet = lookupTestCaseIdPs.executeQuery();
+            if(resultSet.first()){
+                return resultSet.getInt(1);
+            }
+            else{
+                return -1;
+            }
+        }
+        catch (SQLException e){
+            System.err.println("(CRITICAL) Failed to retrieve test case Id!");
+            DatabaseDriver.printSQLException(e);
+            System.exit(4);
+        }
+        return -1;
+    }
+
+    @Override
     public List<String> getTestCaseMetadata(int metadataId) {
         try{
             List<String> packagedTestcaseMetadata = new ArrayList<>();
@@ -418,7 +440,7 @@ public final class DatabaseDriver extends JftfModule implements IDatabaseDriver{
             DatabaseDriver.printSQLException(e);
             System.exit(4);
         }
-        return 0;
+        return -1;
     }
 
     @Override
