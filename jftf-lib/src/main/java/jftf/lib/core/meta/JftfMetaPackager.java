@@ -9,6 +9,8 @@ import jftf.lib.tools.annotations.TestCaseDev;
 import org.reflections.Reflections;
 
 import java.nio.file.Path;
+import java.sql.Timestamp;
+import java.util.Date;
 import java.util.Set;
 
 public final class JftfMetaPackager extends JftfModule implements IJftfMetaPackager{
@@ -33,14 +35,22 @@ public final class JftfMetaPackager extends JftfModule implements IJftfMetaPacka
         if(this.lookupTestCase(this.generateTestCaseMetadata(testClasses)) == -1){
             logger.LogInfo("No entry found in the JFTF CMDB! Continuing registration...");
             databaseDriver.insertTestCase(testCaseMetadata.getTestName(),testCaseMetadata.getFeatureGroup(),testCaseMetadata.getTestGroup(),testCaseMetadata.getTestPath(),testCaseMetadata.getTestVersion());
-            logger.LogInfo("Test case registration complete!");
-            System.out.println("Test case registration complete!");
+            if(this.lookupTestCase(this.generateTestCaseMetadata(testClasses)) != -1) {
+                logger.LogInfo("Test case registration complete!");
+                System.out.println("Test case registration complete!");
+            }
+            else{
+                logger.LogError("Failed to register test case!");
+                System.err.println("Failed to register test case!");
+                System.exit(1);
+            }
         }
         else{
             logger.LogInfo(String.format("Test case '%s' entry found in the JFTF CMDB! Omitting registration!",testClasses.getSimpleName()));
             System.out.printf("Test case '%s' entry found in the JFTF CMDB! Omitting registration!%n",testClasses.getSimpleName());
             return 1;
         }
+        this.updateTestCaseInformation(DatabaseDriver.modeUpdateTestCaseFirstExecution, new Timestamp(new Date().getTime()),null,Boolean.TRUE);
         return 0;
     }
 
@@ -118,5 +128,16 @@ public final class JftfMetaPackager extends JftfModule implements IJftfMetaPacka
         logger.LogInfo(String.format("Inserting test report information into JFTF CMDB for test Id '%s'",jftfTestReportInformation.getTestId()));
         databaseDriver.insertTestReport(jftfTestReportInformation.getTestId(),jftfTestReportInformation.getStartupTimestamp(),jftfTestReportInformation.getEndTimestamp(),jftfTestReportInformation.getTestDuration(),jftfTestReportInformation.getErrorMessages(),jftfTestReportInformation.getLoggerOutput(), jftfTestReportInformation.getExecutionResult());
         logger.LogInfo("Test report insertion complete!");
+    }
+
+    @Override
+    public void updateTestCaseInformation(String updateMode, Timestamp firstExecution, Timestamp lastExecution, Boolean executed) {
+        logger.LogInfo(String.format("Updating test case information for test Id '%s'",this.testId));
+        if( databaseDriver.updateTestCase(this.testId,updateMode,firstExecution,lastExecution,executed) == Boolean.TRUE){
+            logger.LogInfo("Updated test case information successfully!");
+        }
+        else{
+            logger.LogError("Failed to update test case information!");
+        }
     }
 }

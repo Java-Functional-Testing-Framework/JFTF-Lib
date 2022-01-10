@@ -2,6 +2,7 @@ package jftf.lib.core.runner;
 
 import jftf.core.JftfModule;
 import jftf.core.ioctl.ConfigurationManager;
+import jftf.core.ioctl.DatabaseDriver;
 import jftf.lib.core.computer.JftfComputer;
 import jftf.lib.core.computer.JftfSequentialComputer;
 import jftf.lib.core.meta.JftfMetaPackager;
@@ -77,6 +78,7 @@ public final class JftfDetachedRunner extends JftfRunner {
         logger.LogDebug("Test report packaging complete!");
         JftfMetaPackager jftfMetaPackager = JftfMetaPackager.JftfMetaPackagerFactory();
         jftfMetaPackager.insertTestReportInformation(this.testReportInformation);
+        jftfMetaPackager.updateTestCaseInformation(DatabaseDriver.modeUpdateTestCaseLastExecution,null,endTimestamp,Boolean.TRUE);
     }
 
     @Override

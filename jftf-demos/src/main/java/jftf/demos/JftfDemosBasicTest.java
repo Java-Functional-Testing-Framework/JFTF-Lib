@@ -3,35 +3,36 @@ package jftf.demos;
 import jftf.lib.tools.annotations.*;
 import jftf.lib.tools.logger.JftfTestLogger;
 
-import static org.junit.jupiter.api.Assertions.*;
-
-@TestCaseDev(featureGroup = "dev", testGroup = "dev", testVersion = "1.0")
+@TestCaseDev(featureGroup = "dev", testGroup = "examples", testVersion = "1.0")
 public class JftfDemosBasicTest {
-    private String a;
+    private JftfTestLogger logger;
 
     @BeforeTest
     void beforeTest(){
-        System.out.println("before");
+        System.out.println("Inside BeforeTest method!");
+        logger = JftfTestLogger.JftfTestLoggerFactory(this.getClass().getSimpleName());
+        logger.LogInfo("Test case start!");
     }
 
     @Test
-    void test1() throws InterruptedException {
-        JftfTestLogger logger = JftfTestLogger.JftfTestLoggerFactory(this.getClass().getSimpleName());
-        logger.LogInfo("TestLOg");
-        logger.LogWarning("TestLOg");
-        logger.LogError("TestLOg");
-        System.out.println(logger.getOutputMessage());
-        //assertTrue(false);
-        System.out.println("test1");
+    void testFixture1() {
+        System.out.println("Inside testFixture 1!");
+        logger.LogInfo("Inside testFixture 1!");
+        logger.LogWarning("Inside testFixture 1!");
+        logger.LogError("Inside testFixture 1!");
     }
 
     @Test
-    void test2(){
-        System.out.println("test2");
+    void testFixture2() {
+        System.out.println("Inside testFixture 2!");
+        logger.LogInfo("Inside testFixture 2!");
+        logger.LogWarning("Inside testFixture 2!");
+        logger.LogError("Inside testFixture 2!");
     }
 
     @AfterTest
     void afterTest(){
-        System.out.println("after");
+        System.out.println("Inside BeforeTest method!");
+        logger.LogInfo("Test case end");
     }
 }
