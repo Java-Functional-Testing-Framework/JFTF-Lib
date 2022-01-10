@@ -1,9 +1,11 @@
 package jftf.demos;
 
 import jftf.lib.tools.annotations.*;
+import jftf.lib.tools.logger.JftfTestLogger;
+
 import static org.junit.jupiter.api.Assertions.*;
 
-@TestCase(featureGroup = "dev", testGroup = "dev", testVersion = "1.0")
+@TestCaseDev(featureGroup = "dev", testGroup = "dev", testVersion = "1.0")
 public class JftfDemosBasicTest {
     private String a;
 
@@ -13,8 +15,13 @@ public class JftfDemosBasicTest {
     }
 
     @Test
-    void test1(){
-        assertTrue(false);
+    void test1() throws InterruptedException {
+        JftfTestLogger logger = JftfTestLogger.JftfTestLoggerFactory(this.getClass().getSimpleName());
+        logger.LogInfo("TestLOg");
+        logger.LogWarning("TestLOg");
+        logger.LogError("TestLOg");
+        System.out.println(logger.getOutputMessage());
+        //assertTrue(false);
         System.out.println("test1");
     }
 

@@ -9,6 +9,7 @@ import jftf.lib.core.meta.JftfTestReportInformation;
 import jftf.lib.tools.annotations.AfterTest;
 import jftf.lib.tools.annotations.BeforeTest;
 import jftf.lib.tools.annotations.Test;
+import jftf.lib.tools.logger.JftfTestLogger;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InaccessibleObjectException;
@@ -64,6 +65,9 @@ public final class JftfDetachedRunner extends JftfRunner {
         Time testDuration = getTimestampDiff(this.testReportInformation.getStartupTimestamp(),endTimestamp);
         this.testReportInformation.setTestDuration(testDuration);
         this.testReportInformation.setErrorMessages(this.jftfComputer.getErrorMessages());
+        if(JftfTestLogger.getJftfTestLogger() != null) {
+            this.testReportInformation.setLoggerOutput(JftfTestLogger.getJftfTestLogger().getOutputMessage());
+        }
         if(this.testReportInformation.getErrorMessages().isEmpty()){
             this.testReportInformation.setExecutionResult(JftfTestReportInformation.successfulState);
         }
