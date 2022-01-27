@@ -9,7 +9,6 @@
 <?import javafx.scene.control.TableColumn?>
 <?import javafx.scene.control.TableView?>
 <?import javafx.scene.control.TextArea?>
-<?import javafx.scene.layout.AnchorPane?>
 <?import javafx.scene.layout.ColumnConstraints?>
 <?import javafx.scene.layout.GridPane?>
 <?import javafx.scene.layout.RowConstraints?>
@@ -21,9 +20,9 @@
 <Stage minHeight="800.0" minWidth="1000.0" title="Jftf Control App" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="jftf.app.JftfControlApplicationController">
     <scene>
         <Scene>
-         <TabPane prefHeight="800.0" prefWidth="1000.0">
+         <TabPane fx:id="tabPane" prefHeight="800.0" prefWidth="1000.0">
             <tabs>
-               <Tab closable="false" text="Test cases">
+               <Tab fx:id="testCasesTab" closable="false" onSelectionChanged="#tabChangeEvent" text="Test cases">
                   <content>
                      <GridPane fx:id="mainPane">
                        <columnConstraints>
@@ -39,7 +38,7 @@
                                <TableColumn editable="false" prefWidth="75.0" sortable="false" text="Test Id" />
                                <TableColumn editable="false" minWidth="200.0" prefWidth="200.0" sortable="false" text="First Execution" />
                                  <TableColumn editable="false" minWidth="200.0" prefWidth="200.0" sortable="false" text="Last Execution" />
-                                 <TableColumn editable="false" minWidth="150.0" prefWidth="174.0" sortable="false" text="Execution status" />
+                                 <TableColumn editable="false" minWidth="150.0" prefWidth="174.0" sortable="false" text="Execution Status" />
                              </columns>
                            </TableView>
                            <GridPane GridPane.columnIndex="1">
@@ -126,20 +125,28 @@
                      </GridPane>
                   </content>
                </Tab>
-                <Tab closable="false" text="Reports">
-                    <content>
-                        <AnchorPane prefHeight="200" prefWidth="200" />
-                    </content>
-                </Tab>
-                <Tab closable="false" text="Register test">
-                    <content>
-                        <AnchorPane prefHeight="200" prefWidth="200" />
-                    </content>
-                </Tab>
-                <Tab closable="false" text="About">
-                    <content>
-                        <AnchorPane prefHeight="200" prefWidth="200" />
-                    </content>
+                <Tab fx:id="testReportsTab" closable="false" onSelectionChanged="#tabChangeEvent" text="Reports">
+                  <content>
+                     <GridPane>
+                       <columnConstraints>
+                         <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" percentWidth="100.0" prefWidth="100.0" />
+                       </columnConstraints>
+                       <rowConstraints>
+                         <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                       </rowConstraints>
+                        <children>
+                           <TableView fx:id="reportTableView" prefHeight="200.0" prefWidth="200.0">
+                             <columns>
+                               <TableColumn editable="false" prefWidth="75.0" sortable="false" text="Test Id" />
+                               <TableColumn editable="false" minWidth="150.0" prefWidth="150.0" sortable="false" text="Startup Timestamp" />
+                                 <TableColumn editable="false" minWidth="150.0" prefWidth="150.0" sortable="false" text="End Timestamp" />
+                                 <TableColumn editable="false" minWidth="150.0" prefWidth="150.0" sortable="false" text="Test Duration" />
+                                 <TableColumn editable="false" minWidth="175.0" prefWidth="175.0" sortable="false" text="Execution Result" />
+                             </columns>
+                           </TableView>
+                        </children>
+                     </GridPane>
+                  </content>
                 </Tab>
             </tabs>
          </TabPane>

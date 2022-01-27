@@ -13,6 +13,7 @@ import jftf.core.JftfModule;
 import jftf.core.ioctl.ConfigurationManager;
 import jftf.core.ioctl.DatabaseDriver;
 import jftf.lib.core.meta.JftfTestCase;
+import jftf.lib.core.meta.JftfTestReportInformation;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.FilenameUtils;
 
@@ -28,10 +29,20 @@ import java.util.ResourceBundle;
 public class JftfControlApplicationController extends JftfModule implements Initializable  {
     private final List<JftfTestCase> jftfTestCaseList = new ArrayList<>();
     private List<Integer> testCaseIds = new ArrayList<>();
+    private final List<JftfTestReportInformation> jftfTestReportInformationList = new ArrayList<>();
+    private List<Integer> testReportIds = new ArrayList<>();
+    @FXML
+    private Tab testCasesTab;
+    @FXML
+    private Tab testReportsTab;
+    @FXML
+    private TabPane tabPane;
     @FXML
     private GridPane mainPane;
     @FXML
     private TableView<JftfTestCase> testTableView;
+    @FXML
+    private TableView<JftfTestReportInformation> reportTableView;
     @FXML
     private Text testNotSelectedText;
     @FXML
@@ -57,17 +68,45 @@ public class JftfControlApplicationController extends JftfModule implements Init
         DatabaseDriver.DatabaseDriverFactory();
         logger.LogInfo("Started JFTF control application!");
         this.populateTestTableView();
+        JftfControlUiFlags.startupComplete = Boolean.TRUE;
+    }
+
+    @FXML
+    private void tabChangeEvent(){
+        if(JftfControlUiFlags.startupComplete == Boolean.TRUE) {
+            if (this.tabPane.getSelectionModel().getSelectedItem() == this.testCasesTab) {
+                if (this.testCasesTab.isSelected()) {
+                    this.reloadTestTableView();
+                }
+            } else if (this.tabPane.getSelectionModel().getSelectedItem() == this.testReportsTab) {
+                if (this.testReportsTab.isSelected()) {
+                    this.reloadTestReportView();
+                }
+            }
+        }
     }
 
     @FXML
     private void reloadTestTableView(){
-        if(JftfControlUiFlags.reloadingTestCaseListFlag == Boolean.FALSE) {
-            JftfControlUiFlags.reloadingTestCaseList();
-            this.reloadTestCaseListButton.setDisable(Boolean.TRUE);
-            this.testTableView.getItems().clear();
-            this.jftfTestCaseList.clear();
-            this.testCaseIds.clear();
-            this.populateTestTableView();
+        if(this.testCasesTab.isSelected()) {
+            if (JftfControlUiFlags.reloadingTestCaseListFlag == Boolean.FALSE) {
+                JftfControlUiFlags.reloadingTestCaseList();
+                this.reloadTestCaseListButton.setDisable(Boolean.TRUE);
+                this.testTableView.getItems().clear();
+                this.jftfTestCaseList.clear();
+                this.testCaseIds.clear();
+                this.populateTestTableView();
+            }
+        }
+    }
+
+    private void reloadTestReportView(){
+        if(JftfControlUiFlags.reloadingTestReportListFlag == Boolean.FALSE){
+            JftfControlUiFlags.reloadingTestReportList();
+            this.reportTableView.getItems().clear();
+            this.jftfTestReportInformationList.clear();
+            this.testReportIds.clear();
+            this.populateTestReportView();
         }
     }
 
@@ -87,6 +126,29 @@ public class JftfControlApplicationController extends JftfModule implements Init
             this.executeTestCase();
             this.executeTestCaseButton.setDisable(Boolean.FALSE);
         }
+    }
+
+    private void populateTestReportView(){
+        logger.LogInfo("Populating test report table in the JFTF control application");
+        this.testReportIds = databaseDriver.getTestReportInformationIds();
+        logger.LogDebug(String.format("Found '%s' test reports registered in the JFTF CMDB!",this.testReportIds.size()));
+        for (Integer testReportId : this.testReportIds){
+            logger.LogDebug(String.format("Retrieving info for test report '%s'",testReportId));
+            List<String> packagedTestReportInformation = databaseDriver.getTestReportInformation(testReportId);
+            this.jftfTestReportInformationList.add(new JftfTestReportInformation(packagedTestReportInformation));
+            logger.LogDebug(String.format("Retrieved info for test report '%s'!",testReportId));
+        }
+        ObservableList<JftfTestReportInformation> tableData = FXCollections.observableArrayList();
+        tableData.addAll(this.jftfTestReportInformationList);
+        ObservableList<TableColumn<JftfTestReportInformation, ?>> testReportColumns = this.reportTableView.getColumns();
+        testReportColumns.get(0).setCellValueFactory(new PropertyValueFactory<>("testId"));
+        testReportColumns.get(1).setCellValueFactory(new PropertyValueFactory<>("startupTimestamp"));
+        testReportColumns.get(2).setCellValueFactory(new PropertyValueFactory<>("endTimestamp"));
+        testReportColumns.get(3).setCellValueFactory(new PropertyValueFactory<>("testDuration"));
+        testReportColumns.get(4).setCellValueFactory(new PropertyValueFactory<>("executionResult"));
+        this.reportTableView.setItems(tableData);
+        logger.LogInfo("Successfully populated test report table in the JFTF control application!");
+        JftfControlUiFlags.reloadedTestReportList();
     }
 
     private void executeTestCase(){
@@ -167,7 +229,7 @@ public class JftfControlApplicationController extends JftfModule implements Init
     private void populateTestTableView() {
         logger.LogInfo("Populating test table in the JFTF control application");
         this.testCaseIds = databaseDriver.getTestCaseIds();
-        logger.LogDebug(String.format("Found '%s' test cases registered in the JFTF CMDB!",testCaseIds.size()));
+        logger.LogDebug(String.format("Found '%s' test cases registered in the JFTF CMDB!",this.testCaseIds.size()));
         for (Integer testId : this.testCaseIds){
             logger.LogDebug(String.format("Retrieving info for test case '%s'",testId));
             List<String> packagedTestCaseInformation = databaseDriver.getTestCase(testId);

@@ -5,37 +5,48 @@ public class JftfControlUiFlags {
     public static Boolean testCaseSelectedFlag = Boolean.FALSE;
     public static Boolean settingTestCaseMetadataFlag = Boolean.FALSE;
     public static Boolean executingTestCaseFlag = Boolean.FALSE;
-    private JftfControlUiFlags() {}
+    public static Boolean reloadingTestReportListFlag = Boolean.FALSE;
+    public static Boolean startupComplete = Boolean.FALSE;
+    private JftfControlUiFlags() {
+    }
 
-    public static void reloadingTestCaseList(){
+    public static void reloadingTestCaseList() {
         reloadingTestCaseListFlag = Boolean.TRUE;
     }
 
-    public static void reloadedTestCaseList(){
+    public static void reloadedTestCaseList() {
         reloadingTestCaseListFlag = Boolean.FALSE;
     }
 
-    public static void selectedTestCase(){
+    public static void reloadingTestReportList() {
+        reloadingTestReportListFlag = Boolean.TRUE;
+    }
+
+    public static void reloadedTestReportList() {
+        reloadingTestReportListFlag = Boolean.FALSE;
+    }
+
+    public static void selectedTestCase() {
         testCaseSelectedFlag = Boolean.TRUE;
     }
 
-    public static void unselectedTestCase(){
+    public static void unselectedTestCase() {
         testCaseSelectedFlag = Boolean.FALSE;
     }
 
-    public static void settingTestCaseMetadata(){
+    public static void settingTestCaseMetadata() {
         settingTestCaseMetadataFlag = Boolean.TRUE;
     }
 
-    public static void setTestCaseMetadata(){
+    public static void setTestCaseMetadata() {
         settingTestCaseMetadataFlag = Boolean.FALSE;
     }
 
-    public static void executingTestCase(){
+    public static void executingTestCase() {
         executingTestCaseFlag = Boolean.TRUE;
     }
 
-    public static void executedTestCase(){
+    public static void executedTestCase() {
         executingTestCaseFlag = Boolean.FALSE;
     }
 }
