@@ -1,6 +1,8 @@
 package jftf.lib.core.meta;
 
 import java.sql.Timestamp;
+import java.util.List;
+import java.util.Objects;
 
 public class JftfTestCase {
     private int metaDataId;
@@ -13,6 +15,18 @@ public class JftfTestCase {
         this.firstExecution = firstExecution;
         this.lastExecution = lastExecution;
         this.executed = executed;
+    }
+
+    public JftfTestCase(List<String> packagedTestCaseInformation){
+        this.metaDataId = Integer.parseInt(packagedTestCaseInformation.get(0));
+        this.firstExecution = Timestamp.valueOf(packagedTestCaseInformation.get(1));
+        this.lastExecution = Timestamp.valueOf(packagedTestCaseInformation.get(2));
+        if(Objects.equals(packagedTestCaseInformation.get(3), "1")){
+            this.executed = Boolean.TRUE;
+        }
+        else{
+            this.executed = Boolean.FALSE;
+        }
     }
 
     public int getMetaDataId() {

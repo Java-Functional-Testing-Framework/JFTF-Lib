@@ -5,7 +5,7 @@ plugins {
 }
 
 group 'org.jftf'
-version '1.0-SNAPSHOT'
+version '1.0'
 
 repositories {
     mavenCentral()
@@ -24,7 +24,7 @@ tasks.withType(JavaCompile) {
 
 application {
     mainModule = 'jftf.app'
-    mainClass = 'jftf.app.HelloApplication'
+    mainClass = 'jftf.app.JftfControlApplication'
 }
 
 javafx {
@@ -35,6 +35,9 @@ javafx {
 dependencies {
     testImplementation("org.junit.jupiter:junit-jupiter-api:${junitVersion}")
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:${junitVersion}")
+    implementation group: 'commons-io', name: 'commons-io', version: '2.11.0'
+    implementation project(':jftf-core')
+    implementation project(':jftf-lib')
 }
 
 test {

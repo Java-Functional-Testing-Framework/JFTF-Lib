@@ -1,4 +1,4 @@
-module jftj.lib {
+module jftf.lib {
     exports jftf.lib.core;
     exports jftf.lib.core.runner;
     exports jftf.lib.core.computer;

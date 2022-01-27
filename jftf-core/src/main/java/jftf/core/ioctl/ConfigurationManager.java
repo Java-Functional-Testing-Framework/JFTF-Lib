@@ -32,11 +32,12 @@ public final class ConfigurationManager  {
     public final static String loggerConfigurationName = "LOGGER_CONFIG";
     public final static String cmdbConfigurationName = "CMDB_CONFIG";
     private final static List<String> validConfigurationNames = List.of(daemonConfigurationName,loggerConfigurationName,cmdbConfigurationName);
-    // LOGGER CONFIG
+    // LOGGER_CONFIG
     public final static String groupLoggerBehaviour = "behaviour";
     public final static String groupLoggerIp = "ip";
     public final static String groupLoggerDaemonContextInformation = "daemon_ctx_info";
     public final static String groupLoggerTestAppContextInformation = "jftf_test_ctx_info";
+    public final static String groupLoggerControlAppContextInformation = "jftf_control_app_info";
     public final static String keyLoggerEnableDebug = "enable_debug";
     private final static Boolean defaultValueLoggerEnableDebug = Boolean.FALSE;
     public final static String keyLoggerSyslogServerIp = "syslog_server_ip";
@@ -50,6 +51,7 @@ public final class ConfigurationManager  {
     private final static String defaultValueLoggerAppender = LoggingContextInformation.multiAppender;
     private final static String defaultValueLoggerDaemonAppId = "jftfDaemon";
     private final static String defaultValueLoggerTestAppId = "jftfTestApp";
+    private final static String defaultValueLoggerControlAppId = "jftfControlApp";
     // CMDB_CONFIG
     public final static String groupCmdbCredentials = "credentials";
     public final static String keyCmdbIp = "ip";
@@ -193,6 +195,7 @@ public final class ConfigurationManager  {
         loggerConfigurationMap.put(groupLoggerIp,List.of(keyLoggerSyslogServerIp));
         loggerConfigurationMap.put(groupLoggerDaemonContextInformation,List.of(keyLoggerAppId,keyLoggerLogLevel,keyLoggerAppender));
         loggerConfigurationMap.put(groupLoggerTestAppContextInformation,List.of(keyLoggerAppId,keyLoggerLogLevel,keyLoggerAppender));
+        loggerConfigurationMap.put(groupLoggerControlAppContextInformation,List.of(keyLoggerAppId,keyLoggerLogLevel,keyLoggerAppender));
         cmdbConfigurationMap.put(groupCmdbCredentials,List.of(keyCmdbName,keyCmdbIp,keyCmdbUsername,keyCmdbPassword));
     }
 
@@ -259,6 +262,18 @@ public final class ConfigurationManager  {
             groupTestAppContextInformation.appendChild(keyTestAppAppId);
             groupTestAppContextInformation.appendChild(keyTestAppLogLevel);
             groupTestAppContextInformation.appendChild(keyTestAppAppender);
+
+            Element groupControlAppContextInformation = document.createElement(groupLoggerControlAppContextInformation);
+            rootElement.appendChild(groupControlAppContextInformation);
+            Element keyControlAppAppId = document.createElement(keyLoggerAppId);
+            keyControlAppAppId.appendChild(document.createTextNode(defaultValueLoggerControlAppId));
+            Element keyControlAppLogLevel = document.createElement(keyLoggerLogLevel);
+            keyControlAppLogLevel.appendChild(document.createTextNode(defaultValueLoggerLogLevel));
+            Element keyControlAppAppender = document.createElement(keyLoggerAppender);
+            keyControlAppAppender.appendChild(document.createTextNode(defaultValueLoggerAppender));
+            groupControlAppContextInformation.appendChild(keyControlAppAppId);
+            groupControlAppContextInformation.appendChild(keyControlAppLogLevel);
+            groupControlAppContextInformation.appendChild(keyControlAppAppender);
 
             TransformerFactory transformerFactory = TransformerFactory.newInstance();
             Transformer transformer = transformerFactory.newTransformer();
