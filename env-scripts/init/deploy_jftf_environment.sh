@@ -74,7 +74,7 @@ function configure_rsyslog_remote_logging(){
   fi
 
   sudo systemctl restart rsyslog.service;
-  echo "Rsyslog daemon configration successful!";
+  echo "Rsyslog daemon configuration successful!";
 }
 
 if [ "$EUID" -ne 0 ]

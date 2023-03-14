@@ -5,6 +5,7 @@ import jftf.core.ioctl.ControlIOFactory;
 import jftf.core.ioctl.DatabaseDriver;
 import jftf.core.logging.LoggingContextInformation;
 import jftf.core.logging.LoggingController;
+import jftf.core.ormctl.HibernateController;
 
 public abstract class JftfModule {
     protected static LoggingController logger = null;
@@ -12,30 +13,30 @@ public abstract class JftfModule {
     protected static DatabaseDriver databaseDriver = null;
     protected LoggingContextInformation attachedLoggingContextInformation = null;
 
-    protected void attachLogger(LoggingController loggerInstance){
-        if(logger == null && controlIO != null) {
+    protected final void attachLogger(LoggingController loggerInstance) {
+        if (logger == null && controlIO != null) {
             logger = loggerInstance;
         }
     }
 
-    protected void attachControlIO(ControlIO controlIOInstance){
-        if(controlIO == null) {
+    protected final void attachControlIO(ControlIO controlIOInstance) {
+        if (controlIO == null) {
             controlIO = controlIOInstance;
         }
     }
 
-    protected void attachDatabaseDriver(DatabaseDriver databaseDriverInstance){
-        if(databaseDriver == null){
+    protected final void attachDatabaseDriver(DatabaseDriver databaseDriverInstance) {
+        if (databaseDriver == null) {
             databaseDriver = databaseDriverInstance;
         }
     }
 
-    public void attachLoggingContextInformation(LoggingContextInformation loggingContextInformation){
+    public final void attachLoggingContextInformation(LoggingContextInformation loggingContextInformation) {
         attachedLoggingContextInformation = loggingContextInformation;
     }
 
-    public static void startupSequence(String configLoggerGroup){
-        if(controlIO == null) {
+    public static void startupSequence(String configLoggerGroup) {
+        if (controlIO == null) {
             ControlIOFactory.getControlIO(configLoggerGroup).checkJftfEnvironmentIntegrity();
             logger.LogInfo("Startup sequence is complete!");
             Runtime.getRuntime().addShutdownHook(new Thread(() -> {
