@@ -5,7 +5,6 @@ import jftf.core.ioctl.ControlIOFactory;
 import jftf.core.ioctl.DatabaseDriver;
 import jftf.core.logging.LoggingContextInformation;
 import jftf.core.logging.LoggingController;
-import jftf.core.ormctl.HibernateController;
 
 public abstract class JftfModule {
     protected static LoggingController logger = null;
