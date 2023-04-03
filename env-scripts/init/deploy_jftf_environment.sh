@@ -58,6 +58,12 @@ function configure_database(){
   sudo mariadb -e "FLUSH PRIVILEGES;";
 }
 
+function initialize_cmdb_schema(){
+  echo "Running database_init.sh schema initialization script";
+  sudo ./database_init.sh $DATABASE_PASSWORD localhost
+  echo "Database initialization successful!";
+}
+
 function configure_rsyslog_remote_logging(){
   echo "Reconfiguring rsyslog daemon configuration file to allow remote logging";
   if [ ! -f /etc/rsyslog.conf ]; then
@@ -95,7 +101,7 @@ do
     read -r -p 'Do you want to start the setup process? Y(y)/N(n) ' choice
     case "$choice" in
       n|N) break;;
-      y|Y) echo; install_apt_dependencies; echo; my_sql_secure; echo; configure_database; echo; configure_rsyslog_remote_logging; echo; break;;
+      y|Y) echo; install_apt_dependencies; echo; my_sql_secure; echo; configure_database; echo; initialize_cmdb_schema; echo; configure_rsyslog_remote_logging; echo; break;;
       *) echo 'Response not valid';;
     esac
 done
