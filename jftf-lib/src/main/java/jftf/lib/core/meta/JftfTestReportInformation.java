@@ -38,7 +38,7 @@ public class JftfTestReportInformation {
         this.testId = Integer.parseInt(packagedTestReportInformation.get(1));
         this.startupTimestamp = Timestamp.valueOf(packagedTestReportInformation.get(2));
         this.endTimestamp = Timestamp.valueOf(packagedTestReportInformation.get(3));
-        this.testDuration = Time.valueOf(packagedTestReportInformation.get(4));
+        this.testDuration = Time.valueOf(packagedTestReportInformation.get(4).substring(0,8));
         this.errorMessages = packagedTestReportInformation.get(5);
         this.loggerOutput = packagedTestReportInformation.get(6);
         this.executionResult = packagedTestReportInformation.get(7);

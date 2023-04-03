@@ -200,7 +200,9 @@ public final class JftfDetachedRunner extends JftfRunner {
     }
 
     private static Time getTimestampDiff(Timestamp oldTs, Timestamp newTs) {
-        long diffInMS = newTs.getTime() - oldTs.getTime();
-        return new Time(TimeUnit.MILLISECONDS.convert(diffInMS, TimeUnit.MILLISECONDS));
+        long diff =  newTs.getTime() - oldTs.getTime();
+        Date date = new Date(diff);
+        long timeInMillis = date.getTime();
+        return new Time(timeInMillis);
     }
 }
