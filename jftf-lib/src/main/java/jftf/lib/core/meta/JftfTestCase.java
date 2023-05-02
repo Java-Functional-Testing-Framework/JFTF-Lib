@@ -19,8 +19,18 @@ public class JftfTestCase {
 
     public JftfTestCase(List<String> packagedTestCaseInformation){
         this.metaDataId = Integer.parseInt(packagedTestCaseInformation.get(0));
-        this.firstExecution = Timestamp.valueOf(packagedTestCaseInformation.get(1));
-        this.lastExecution = Timestamp.valueOf(packagedTestCaseInformation.get(2));
+        try {
+            this.firstExecution = Timestamp.valueOf(packagedTestCaseInformation.get(1));
+        }
+        catch (IllegalArgumentException e){
+            this.firstExecution = null;
+        }
+        try {
+            this.lastExecution = Timestamp.valueOf(packagedTestCaseInformation.get(2));
+        }
+        catch (IllegalArgumentException e){
+            this.lastExecution = null;
+        }
         if(Objects.equals(packagedTestCaseInformation.get(3), "1")){
             this.executed = Boolean.TRUE;
         }
