@@ -58,7 +58,10 @@ public final class JftfMetaPackager extends JftfModule implements IJftfMetaPacka
     public int lookupTestCase(JftfTestCaseMetadata jftfTestCaseMetadata) {
         if(testId == -1) {
             logger.LogInfo(String.format("Looking up test case '%s' in the JFTF CMDB", jftfTestCaseMetadata.getTestName()));
-            testId = databaseDriver.lookupTestCaseMetadata(jftfTestCaseMetadata.getTestName(), jftfTestCaseMetadata.getFeatureGroup(), jftfTestCaseMetadata.getTestGroup(), jftfTestCaseMetadata.getTestPath(), jftfTestCaseMetadata.getTestVersion());
+            int metadataId = databaseDriver.lookupTestCaseMetadata(jftfTestCaseMetadata.getTestName(), jftfTestCaseMetadata.getFeatureGroup(), jftfTestCaseMetadata.getTestGroup(), jftfTestCaseMetadata.getTestPath(), jftfTestCaseMetadata.getTestVersion());
+            if(metadataId != -1){
+                testId = databaseDriver.lookupTestCase(metadataId);
+            }
         }
         return testId;
     }
