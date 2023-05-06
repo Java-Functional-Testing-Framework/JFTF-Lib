@@ -30,7 +30,6 @@ public final class DatabaseDriver extends JftfModule implements IDatabaseDriver{
     private final static String sqlInsertTestReport = "insert into TestReports(testId, testReportInformationId) values(?,?);";
     private final static String sqlDeleteTestReportP1 = "delete from TestReports where testReportInformationId = ?;";
     private final static String sqlDeleteTestReportP2 = "delete from TestReportInformation where testReportInformationId = ?;";
-    private final static String sqlViewGetLastReportInformationId = "select testReportInformationId from getLastTestReportInformationId;";
     private final static String sqlSetViewMetadataId = "set @mId = ?;";
     private final static String sqlViewGetTestCaseMetadata = "select testName,featureGroup,testGroup,testPath,testVersion from getTestCaseMetadata;";
     private final static String sqlLookupTestCaseMetadata = "select metadataId from TestCaseMetadata where testName = ? and featureGroup = ? and testGroup  = ? and testPath = ? and testVersion = ?;";
@@ -244,9 +243,9 @@ public final class DatabaseDriver extends JftfModule implements IDatabaseDriver{
             insertMetadataPs.executeUpdate();
             ResultSet generatedKeys = insertMetadataPs.getGeneratedKeys();
             if (generatedKeys.next()) {
-                int generatedIMetadataId = generatedKeys.getInt(1);
+                int generatedMetadataId = generatedKeys.getInt(1);
                 PreparedStatement insertTestCasePs = this.databaseConnection.prepareStatement(sqlInsertTestCase);
-                insertTestCasePs.setInt(1, generatedIMetadataId);
+                insertTestCasePs.setInt(1, generatedMetadataId);
                 insertTestCasePs.executeUpdate();
                 this.databaseConnection.commit();
             } else {
@@ -510,7 +509,7 @@ public final class DatabaseDriver extends JftfModule implements IDatabaseDriver{
     @Override
     public void insertTestReport(int testId, Timestamp startupTimestamp, Timestamp endTimestamp, Time testDuration, String errorMessages, String loggerOutput, String executionResult) {
         try{
-            PreparedStatement insertTestReportInformationPs = this.databaseConnection.prepareStatement(sqlInsertTestReportInformation);
+            PreparedStatement insertTestReportInformationPs = this.databaseConnection.prepareStatement(sqlInsertTestReportInformation, new String[]{"testReportInformationId"});
             insertTestReportInformationPs.setInt(1,testId);
             insertTestReportInformationPs.setTimestamp(2,startupTimestamp);
             insertTestReportInformationPs.setTimestamp(3,endTimestamp);
@@ -519,16 +518,15 @@ public final class DatabaseDriver extends JftfModule implements IDatabaseDriver{
             insertTestReportInformationPs.setString(6,loggerOutput);
             insertTestReportInformationPs.setString(7,executionResult);
             insertTestReportInformationPs.executeUpdate();
-            Statement getLastReportInformationIdStatement = this.databaseConnection.createStatement();
-            ResultSet resultSet = getLastReportInformationIdStatement.executeQuery(sqlViewGetLastReportInformationId);
-            if(resultSet.first()){
+            ResultSet generatedKeys = insertTestReportInformationPs.getGeneratedKeys();
+            if (generatedKeys.next()) {
+                int generatedTestReportInformationId = generatedKeys.getInt(1);
                 PreparedStatement insertTestReportPs = this.databaseConnection.prepareStatement(sqlInsertTestReport);
                 insertTestReportPs.setInt(1,testId);
-                insertTestReportPs.setInt(2,resultSet.getInt(1));
+                insertTestReportPs.setInt(2,generatedTestReportInformationId);
                 insertTestReportPs.executeUpdate();
                 this.databaseConnection.commit();
-            }
-            else{
+            } else {
                 System.err.println("(CRITICAL) Failed to insert test report!");
                 System.exit(4);
             }
