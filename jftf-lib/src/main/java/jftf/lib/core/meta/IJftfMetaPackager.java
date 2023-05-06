@@ -7,5 +7,5 @@ public interface IJftfMetaPackager {
     int lookupTestCase(JftfTestCaseMetadata jftfTestCaseMetadata);
     JftfTestCaseMetadata generateTestCaseMetadata(Class<?> testClasses);
     void insertTestReportInformation(JftfTestReportInformation jftfTestReportInformation);
-    void updateTestCaseInformation(String updateMode, Timestamp firstExecution, Timestamp lastExecution, Boolean executed);
+    void updateTestCaseInformation(Timestamp lastExecution, Boolean executed);
 }

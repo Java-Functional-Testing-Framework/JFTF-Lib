@@ -21,7 +21,6 @@ import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
 
 public final class JftfDetachedRunner extends JftfRunner {
     private final Class<?> testClasses;
@@ -78,7 +77,7 @@ public final class JftfDetachedRunner extends JftfRunner {
         logger.LogDebug("Test report packaging complete!");
         JftfMetaPackager jftfMetaPackager = JftfMetaPackager.JftfMetaPackagerFactory();
         jftfMetaPackager.insertTestReportInformation(this.testReportInformation);
-        jftfMetaPackager.updateTestCaseInformation(DatabaseDriver.modeUpdateTestCaseLastExecution,null,endTimestamp,Boolean.TRUE);
+        jftfMetaPackager.updateTestCaseInformation(endTimestamp,Boolean.TRUE);
     }
 
     @Override

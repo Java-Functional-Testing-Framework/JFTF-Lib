@@ -50,7 +50,6 @@ public final class JftfMetaPackager extends JftfModule implements IJftfMetaPacka
             System.out.printf("Test case '%s' entry found in the JFTF CMDB! Omitting registration!%n",testClasses.getSimpleName());
             return 1;
         }
-        this.updateTestCaseInformation(DatabaseDriver.modeUpdateTestCaseFirstExecution, new Timestamp(new Date().getTime()),null,Boolean.TRUE);
         return 0;
     }
 
@@ -134,12 +133,24 @@ public final class JftfMetaPackager extends JftfModule implements IJftfMetaPacka
     }
 
     @Override
-    public void updateTestCaseInformation(String updateMode, Timestamp firstExecution, Timestamp lastExecution, Boolean executed) {
-        logger.LogInfo(String.format("Updating test case information for test Id '%s'",this.testId));
-        if( databaseDriver.updateTestCase(this.testId,updateMode,firstExecution,lastExecution,executed) == Boolean.TRUE){
-            logger.LogInfo("Updated test case information successfully!");
+    public void updateTestCaseInformation(Timestamp lastExecution, Boolean executed) {
+        logger.LogInfo(String.format("Updating test case information for test Id '%s'", this.testId));
+        if (databaseDriver.getTestCase(this.testId) != null) {
+            JftfTestCase currentTestCaseInformation = new JftfTestCase(databaseDriver.getTestCase(this.testId));
+            if (currentTestCaseInformation.getExecuted() == Boolean.FALSE) {
+                logger.LogDebug("First execution for test case, running TestCase update in modeUpdateTestCaseFirstExecution first!");
+                if (databaseDriver.updateTestCase(this.testId, DatabaseDriver.modeUpdateTestCaseFirstExecution, new Timestamp(new Date().getTime()), null, Boolean.TRUE)) {
+                    logger.LogInfo("Updated test case information successfully in modeUpdateTestCaseFirstExecution!");
+                } else {
+                    logger.LogError("Failed to update test case information!");
+                }
+            }
+        } else {
+            logger.LogError("No TestCase entry found for current test case, updating test case information will likely fail!");
         }
-        else{
+        if (databaseDriver.updateTestCase(this.testId, DatabaseDriver.modeUpdateTestCaseLastExecution, null, lastExecution, executed) == Boolean.TRUE) {
+            logger.LogInfo("Updated test case information successfully in modeUpdateTestCaseLastExecution!");
+        } else {
             logger.LogError("Failed to update test case information!");
         }
     }
