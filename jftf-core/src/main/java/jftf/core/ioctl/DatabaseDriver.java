@@ -30,7 +30,6 @@ public final class DatabaseDriver extends JftfModule implements IDatabaseDriver{
     private final static String sqlInsertTestReport = "insert into TestReports(testId, testReportInformationId) values(?,?);";
     private final static String sqlDeleteTestReportP1 = "delete from TestReports where testReportInformationId = ?;";
     private final static String sqlDeleteTestReportP2 = "delete from TestReportInformation where testReportInformationId = ?;";
-    private final static String sqlViewGetLastMetadataId = "select metadataID from getLastMetadataId;";
     private final static String sqlViewGetLastReportInformationId = "select testReportInformationId from getLastTestReportInformationId;";
     private final static String sqlSetViewMetadataId = "set @mId = ?;";
     private final static String sqlViewGetTestCaseMetadata = "select testName,featureGroup,testGroup,testPath,testVersion from getTestCaseMetadata;";
@@ -236,22 +235,21 @@ public final class DatabaseDriver extends JftfModule implements IDatabaseDriver{
     @Override
     public void insertTestCase(String testName, String featureGroup, String testGroup, Path testPath, String testVersion) {
         try {
-            PreparedStatement insertMetadataPs = this.databaseConnection.prepareStatement(sqlInsertTestCaseMetadata);
+            PreparedStatement insertMetadataPs = this.databaseConnection.prepareStatement(sqlInsertTestCaseMetadata, new String[]{"metadataId"});
             insertMetadataPs.setString(1,testName);
             insertMetadataPs.setString(2,featureGroup);
             insertMetadataPs.setString(3,testGroup);
             insertMetadataPs.setString(4,testPath.toString());
             insertMetadataPs.setString(5,testVersion);
             insertMetadataPs.executeUpdate();
-            Statement getLastMetadataIdStatement = this.databaseConnection.createStatement();
-            ResultSet resultSet = getLastMetadataIdStatement.executeQuery(sqlViewGetLastMetadataId);
-            if(resultSet.first()){
+            ResultSet generatedKeys = insertMetadataPs.getGeneratedKeys();
+            if (generatedKeys.next()) {
+                int generatedIMetadataId = generatedKeys.getInt(1);
                 PreparedStatement insertTestCasePs = this.databaseConnection.prepareStatement(sqlInsertTestCase);
-                insertTestCasePs.setInt(1,resultSet.getInt(1));
+                insertTestCasePs.setInt(1, generatedIMetadataId);
                 insertTestCasePs.executeUpdate();
                 this.databaseConnection.commit();
-            }
-            else{
+            } else {
                 System.err.println("(CRITICAL) Failed to insert test case!");
                 System.exit(4);
             }
