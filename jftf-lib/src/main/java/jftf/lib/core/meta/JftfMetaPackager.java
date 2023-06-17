@@ -2,6 +2,7 @@ package jftf.lib.core.meta;
 
 import com.google.common.io.Files;
 import jftf.core.JftfModule;
+import jftf.core.api.JftfCoreApiHandler;
 import jftf.core.ioctl.ConfigurationManager;
 import jftf.core.ioctl.DatabaseDriver;
 import jftf.lib.tools.annotations.TestCase;
@@ -20,6 +21,7 @@ public final class JftfMetaPackager extends JftfModule implements IJftfMetaPacka
     private JftfMetaPackager(){
         JftfModule.startupSequence(ConfigurationManager.groupLoggerTestAppContextInformation);
         DatabaseDriver.DatabaseDriverFactory();
+        JftfCoreApiHandler.JftfCoreApiHandlerFactory();
     }
 
     public static JftfMetaPackager JftfMetaPackagerFactory(){
@@ -54,6 +56,30 @@ public final class JftfMetaPackager extends JftfModule implements IJftfMetaPacka
     }
 
     @Override
+    public int registerTestCaseJFTFCore(Class<?> testClasses) {
+        logger.LogInfo(String.format("Registering test case '%s'",testClasses.getSimpleName()));
+        if(this.lookupTestCaseJFTFCore(this.generateTestCaseMetadata(testClasses)) == -1) {
+            logger.LogInfo("No entry found in the JFTF CMDB! Continuing registration...");
+            jftfCoreApiHandler.insertTestCaseMetadata(testCaseMetadata.getTestName(),testCaseMetadata.getFeatureGroup(),testCaseMetadata.getTestGroup(),testCaseMetadata.getTestPath(),testCaseMetadata.getTestVersion());
+            if(this.lookupTestCaseJFTFCore(this.generateTestCaseMetadata(testClasses)) != -1) {
+                logger.LogInfo("Test case registration complete!");
+                System.out.println("Test case registration complete!");
+            }
+            else{
+                logger.LogError("Failed to register test case!");
+                System.err.println("Failed to register test case!");
+                System.exit(1);
+            }
+        }
+        else{
+            logger.LogInfo(String.format("Test case '%s' entry found in the JFTF CMDB! Omitting registration!",testClasses.getSimpleName()));
+            System.out.printf("Test case '%s' entry found in the JFTF CMDB! Omitting registration!%n",testClasses.getSimpleName());
+            return 1;
+        }
+        return 0;
+    }
+
+    @Override
     public int lookupTestCase(JftfTestCaseMetadata jftfTestCaseMetadata) {
         if(testId == -1) {
             logger.LogInfo(String.format("Looking up test case '%s' in the JFTF CMDB", jftfTestCaseMetadata.getTestName()));
@@ -61,6 +87,19 @@ public final class JftfMetaPackager extends JftfModule implements IJftfMetaPacka
             if(metadataId != -1){
                 testId = databaseDriver.lookupTestCase(metadataId);
             }
+        }
+        return testId;
+    }
+
+    @Override
+    public int lookupTestCaseJFTFCore(JftfTestCaseMetadata jftfTestCaseMetadata) {
+        if (testId == -1) {
+            logger.LogInfo(String.format("Looking up test case '%s' in the JFTF CMDB", jftfTestCaseMetadata.getTestName()));
+            int metadataId = jftfCoreApiHandler.lookupTestCaseMetadata(jftfTestCaseMetadata.getTestName(), jftfTestCaseMetadata.getFeatureGroup(), jftfTestCaseMetadata.getTestGroup(), jftfTestCaseMetadata.getTestPath(), jftfTestCaseMetadata.getTestVersion());
+            if(metadataId != -1){
+                testId = jftfCoreApiHandler.lookupTestCase(metadataId);
+            }
+            return testId;
         }
         return testId;
     }

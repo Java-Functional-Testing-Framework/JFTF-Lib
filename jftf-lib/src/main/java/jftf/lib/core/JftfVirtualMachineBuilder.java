@@ -22,6 +22,10 @@ public class JftfVirtualMachineBuilder {
                         jftfRunner.run();
                     }
                 }
+                else if(cliExitCode == 9){
+                    JftfMetaPackager jftfMetaPackager = JftfMetaPackager.JftfMetaPackagerFactory();
+                    System.exit(jftfMetaPackager.registerTestCaseJFTFCore(testClasses));
+                }
                 else if(cliExitCode == 10){
                     JftfMetaPackager jftfMetaPackager = JftfMetaPackager.JftfMetaPackagerFactory();
                     System.exit(jftfMetaPackager.registerTestCase(testClasses));

@@ -28,6 +28,9 @@ public final class JftfCliParser implements Callable<Integer> {
     @Option(names = {"-rl", "--register-legacy"}, description = "register test case in the jftf cmdb (LEGACY)")
     private boolean registerTestLegacy = false;
 
+    @Option(names = {"-r", "--register"}, description = "register test case in the jftf cmdb (JFTF-Core REST API)")
+    private boolean registerTestJFTFCore = false;
+
     private JftfCliParser(){}
 
     public static int parseCli(String[] args){
@@ -38,6 +41,9 @@ public final class JftfCliParser implements Callable<Integer> {
     public Integer call(){
         if(helpRequested){
             return 0;
+        }
+        if(registerTestJFTFCore){
+            return 9;
         }
         if(registerTestLegacy){
             return 10;
