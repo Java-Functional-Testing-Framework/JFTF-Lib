@@ -20,12 +20,17 @@ import java.util.Map;
 
 public class JftfCoreApiHandler extends JftfModule implements IJftfCoreApiHandler {
     private static JftfCoreApiHandler jftfCoreApiHandlerInstance = null;
-    private static final String LOGIN_ENDPOINT = "http://localhost:8000/api/rest-auth/login/";
+    private static final String TRANSPORT = "http://";
+    private static final String LOGIN_ENDPOINT = "/api/rest-auth/login/";
     private final Map<String, String> tokens;
+    private String apiHostname;
+    private String apiPort;
 
     private JftfCoreApiHandler() {
-        String username = controlIO.getConfigurationManager().getProperty(ConfigurationManager.cmdbConfigurationName, ConfigurationManager.groupCmdbCredentials, ConfigurationManager.keyApiAuthUsername);
-        String password = controlIO.getConfigurationManager().getProperty(ConfigurationManager.cmdbConfigurationName, ConfigurationManager.groupCmdbCredentials, ConfigurationManager.keyApiAuthPassword);
+        String username = controlIO.getConfigurationManager().getProperty(ConfigurationManager.daemonConfigurationName, ConfigurationManager.groupJftfCoreConfig, ConfigurationManager.keyApiAuthUsername);
+        String password = controlIO.getConfigurationManager().getProperty(ConfigurationManager.daemonConfigurationName, ConfigurationManager.groupJftfCoreConfig, ConfigurationManager.keyApiAuthPassword);
+        this.apiHostname = controlIO.getConfigurationManager().getProperty(ConfigurationManager.daemonConfigurationName, ConfigurationManager.groupJftfCoreConfig, ConfigurationManager.keyApiHostname);
+        this.apiPort = controlIO.getConfigurationManager().getProperty(ConfigurationManager.daemonConfigurationName, ConfigurationManager.groupJftfCoreConfig, ConfigurationManager.keyApiPort);
         this.tokens = authenticate(username, password);
         super.attachJftfCoreApiHandler(this);
     }
@@ -142,7 +147,7 @@ public class JftfCoreApiHandler extends JftfModule implements IJftfCoreApiHandle
     @Override
     public JsonNode executeRequest(String apiUrl) {
         try {
-            String fullUrl = "http://localhost:8000" + apiUrl;
+            String fullUrl = TRANSPORT + String.format("%s:%s", apiHostname, apiPort) + apiUrl;
 
             logger.LogDebug(String.format("Executing request 'GET %s'", fullUrl));
 
@@ -185,7 +190,7 @@ public class JftfCoreApiHandler extends JftfModule implements IJftfCoreApiHandle
     @Override
     public JsonNode executePostRequest(String apiUrl, String requestBody) {
         try {
-            String fullUrl = "http://localhost:8000" + apiUrl;
+            String fullUrl = TRANSPORT + String.format("%s:%s", apiHostname, apiPort) + apiUrl;
 
             logger.LogDebug(String.format("Executing request 'POST %s'", fullUrl));
 
@@ -240,7 +245,10 @@ public class JftfCoreApiHandler extends JftfModule implements IJftfCoreApiHandle
         try {
             logger.LogInfo("Attempting JFTF-Core API token retrieval with the configured API authorization parameters!");
 
-            URL tempUrl = new URL(LOGIN_ENDPOINT);
+            // Build the auth URL
+            String authUrl = TRANSPORT + String.format("%s:%s", apiHostname, apiPort) + LOGIN_ENDPOINT;
+
+            URL tempUrl = new URL(authUrl);
             HttpURLConnection tempConnection = (HttpURLConnection) tempUrl.openConnection();
             tempConnection.setRequestMethod("GET");
             tempConnection.setRequestProperty("Accept", "application/json");
@@ -251,7 +259,7 @@ public class JftfCoreApiHandler extends JftfModule implements IJftfCoreApiHandle
 
             tempConnection.disconnect();
 
-            URL url = new URL(LOGIN_ENDPOINT);
+            URL url = new URL(authUrl);
             HttpURLConnection connection = (HttpURLConnection) url.openConnection();
             connection.setRequestMethod("POST");
             connection.setDoOutput(true);

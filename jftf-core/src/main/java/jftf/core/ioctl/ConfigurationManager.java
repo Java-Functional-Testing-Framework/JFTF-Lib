@@ -54,10 +54,6 @@ public final class ConfigurationManager  {
     private final static String defaultValueLoggerControlAppId = "jftfControlApp";
     // CMDB_CONFIG
     public final static String groupCmdbCredentials = "credentials";
-    public final static String keyApiAuthUsername = "api_username";
-    public final static String defaultValueApiAuthUsername = "jftf_dev";
-    public final static String keyApiAuthPassword = "api_password";
-    public final static String defaultValueApiAuthPassword = "jftf_dev";
     public final static String keyCmdbIp = "ip";
     private final static String defaultValueCmdbIp = "localhost";
     public final static String keyCmdbUsername = "username";
@@ -66,6 +62,15 @@ public final class ConfigurationManager  {
     private final static String defaultValueCmdbPassword = "";
     public final static String keyCmdbName = "db_name";
     private final static String defaultValueCmdbName = "jftf_cmdb";
+    public final static String groupJftfCoreConfig = "jftf_core_config";
+    public final static String keyApiHostname = "api_hostname";
+    private final static String defaultValueApiHostname = "localhost";
+    public final static String keyApiPort = "api_port";
+    private final static String defaultValueApiPort = "8000";
+    public final static String keyApiAuthUsername = "api_username";
+    private final static String defaultValueApiAuthUsername = "jftf_dev";
+    public final static String keyApiAuthPassword = "api_password";
+    private final static String defaultValueApiAuthPassword = "jftf_dev";
     private final static Map<String,List<String>> loggerConfigurationMap = new HashMap<>();
     private final static Map<String,List<String>> daemonConfigurationMap = new HashMap<>();
     private final static Map<String,List<String>> cmdbConfigurationMap = new HashMap<>();
@@ -135,7 +140,7 @@ public final class ConfigurationManager  {
             else if(Objects.equals(configurationName, daemonConfigurationName)){
                 return setPropertyMapCheck(configurationName, configurationGroup, configurationKey, configurationValue, daemonConfigurationMap);
             }
-            else if(Objects.equals(configurationName, daemonConfigurationName)){
+            else if(Objects.equals(configurationName, cmdbConfigurationName)){
                 return setPropertyMapCheck(configurationName, configurationGroup, configurationKey, configurationValue, cmdbConfigurationMap);
             }
         }
@@ -200,7 +205,8 @@ public final class ConfigurationManager  {
         loggerConfigurationMap.put(groupLoggerDaemonContextInformation,List.of(keyLoggerAppId,keyLoggerLogLevel,keyLoggerAppender));
         loggerConfigurationMap.put(groupLoggerTestAppContextInformation,List.of(keyLoggerAppId,keyLoggerLogLevel,keyLoggerAppender));
         loggerConfigurationMap.put(groupLoggerControlAppContextInformation,List.of(keyLoggerAppId,keyLoggerLogLevel,keyLoggerAppender));
-        cmdbConfigurationMap.put(groupCmdbCredentials,List.of(keyApiAuthUsername,keyApiAuthPassword,keyCmdbName,keyCmdbIp,keyCmdbUsername,keyCmdbPassword));
+        cmdbConfigurationMap.put(groupCmdbCredentials,List.of(keyCmdbName,keyCmdbIp,keyCmdbUsername,keyCmdbPassword));
+        daemonConfigurationMap.put(groupJftfCoreConfig,List.of(keyApiHostname,keyApiPort,keyApiAuthUsername,keyApiAuthPassword));
     }
 
     private void generateConfigurationFiles(){
@@ -310,6 +316,22 @@ public final class ConfigurationManager  {
             Element rootElement = document.createElement(daemonConfigurationName.toLowerCase(Locale.ROOT));
             document.appendChild(rootElement);
 
+            Element groupJftfCoreConf = document.createElement(groupJftfCoreConfig);
+            rootElement.appendChild(groupJftfCoreConf);
+
+            Element keyHostname = document.createElement(keyApiHostname);
+            keyHostname.appendChild(document.createTextNode(defaultValueApiHostname));
+            Element keyPort = document.createElement(keyApiPort);
+            keyPort.appendChild(document.createTextNode(defaultValueApiPort));
+            Element keyApiUsername = document.createElement(keyApiAuthUsername);
+            keyApiUsername.appendChild(document.createTextNode(defaultValueApiAuthUsername));
+            Element keyApiPassword = document.createElement(keyApiAuthPassword);
+            keyApiPassword.appendChild(document.createTextNode(defaultValueApiAuthPassword));
+            groupJftfCoreConf.appendChild(keyHostname);
+            groupJftfCoreConf.appendChild(keyPort);
+            groupJftfCoreConf.appendChild(keyApiUsername);
+            groupJftfCoreConf.appendChild(keyApiPassword);
+
             TransformerFactory transformerFactory = TransformerFactory.newInstance();
             Transformer transformer = transformerFactory.newTransformer();
             DOMSource source = new DOMSource(document);
@@ -343,10 +365,7 @@ public final class ConfigurationManager  {
 
             Element groupCredentials = document.createElement(groupCmdbCredentials);
             rootElement.appendChild(groupCredentials);
-            Element keyApiUsername = document.createElement(keyApiAuthUsername);
-            keyApiUsername.appendChild(document.createTextNode(defaultValueApiAuthUsername));
-            Element keyApiPassword = document.createElement(keyApiAuthPassword);
-            keyApiPassword.appendChild(document.createTextNode(defaultValueApiAuthPassword));
+
             Element keyIp = document.createElement(keyCmdbIp);
             keyIp.appendChild(document.createTextNode(defaultValueCmdbIp));
             Element keyName = document.createElement(keyCmdbName);
@@ -355,8 +374,7 @@ public final class ConfigurationManager  {
             keyUsername.appendChild(document.createTextNode(defaultValueCmdbUsername));
             Element keyPassword = document.createElement(keyCmdbPassword);
             keyPassword.appendChild(document.createTextNode(defaultValueCmdbPassword));
-            groupCredentials.appendChild(keyApiUsername);
-            groupCredentials.appendChild(keyApiPassword);
+            groupCredentials.appendChild(keyPassword);
             groupCredentials.appendChild(keyIp);
             groupCredentials.appendChild(keyName);
             groupCredentials.appendChild(keyUsername);
