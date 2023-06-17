@@ -1,5 +1,6 @@
 package jftf.core;
 
+import jftf.core.api.JftfCoreApiHandler;
 import jftf.core.ioctl.ControlIO;
 import jftf.core.ioctl.ControlIOFactory;
 import jftf.core.ioctl.DatabaseDriver;
@@ -10,6 +11,7 @@ public abstract class JftfModule {
     protected static LoggingController logger = null;
     protected static ControlIO controlIO = null;
     protected static DatabaseDriver databaseDriver = null;
+    protected static JftfCoreApiHandler jftfCoreApiHandler = null;
     protected LoggingContextInformation attachedLoggingContextInformation = null;
 
     protected void attachLogger(LoggingController loggerInstance){
@@ -29,6 +31,13 @@ public abstract class JftfModule {
             databaseDriver = databaseDriverInstance;
         }
     }
+
+    protected void attachJftfCoreApiHandler(JftfCoreApiHandler jftfCoreApiHandlerInstance){
+        if(jftfCoreApiHandler == null){
+            jftfCoreApiHandler = jftfCoreApiHandlerInstance;
+        }
+    }
+
 
     public void attachLoggingContextInformation(LoggingContextInformation loggingContextInformation){
         attachedLoggingContextInformation = loggingContextInformation;

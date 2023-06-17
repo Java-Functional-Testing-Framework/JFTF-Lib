@@ -54,6 +54,10 @@ public final class ConfigurationManager  {
     private final static String defaultValueLoggerControlAppId = "jftfControlApp";
     // CMDB_CONFIG
     public final static String groupCmdbCredentials = "credentials";
+    public final static String keyApiAuthUsername = "api_username";
+    public final static String defaultValueApiAuthUsername = "jftf_dev";
+    public final static String keyApiAuthPassword = "api_password";
+    public final static String defaultValueApiAuthPassword = "jftf_dev";
     public final static String keyCmdbIp = "ip";
     private final static String defaultValueCmdbIp = "localhost";
     public final static String keyCmdbUsername = "username";
@@ -196,7 +200,7 @@ public final class ConfigurationManager  {
         loggerConfigurationMap.put(groupLoggerDaemonContextInformation,List.of(keyLoggerAppId,keyLoggerLogLevel,keyLoggerAppender));
         loggerConfigurationMap.put(groupLoggerTestAppContextInformation,List.of(keyLoggerAppId,keyLoggerLogLevel,keyLoggerAppender));
         loggerConfigurationMap.put(groupLoggerControlAppContextInformation,List.of(keyLoggerAppId,keyLoggerLogLevel,keyLoggerAppender));
-        cmdbConfigurationMap.put(groupCmdbCredentials,List.of(keyCmdbName,keyCmdbIp,keyCmdbUsername,keyCmdbPassword));
+        cmdbConfigurationMap.put(groupCmdbCredentials,List.of(keyApiAuthUsername,keyApiAuthPassword,keyCmdbName,keyCmdbIp,keyCmdbUsername,keyCmdbPassword));
     }
 
     private void generateConfigurationFiles(){
@@ -339,6 +343,10 @@ public final class ConfigurationManager  {
 
             Element groupCredentials = document.createElement(groupCmdbCredentials);
             rootElement.appendChild(groupCredentials);
+            Element keyApiUsername = document.createElement(keyApiAuthUsername);
+            keyApiUsername.appendChild(document.createTextNode(defaultValueApiAuthUsername));
+            Element keyApiPassword = document.createElement(keyApiAuthPassword);
+            keyApiPassword.appendChild(document.createTextNode(defaultValueApiAuthPassword));
             Element keyIp = document.createElement(keyCmdbIp);
             keyIp.appendChild(document.createTextNode(defaultValueCmdbIp));
             Element keyName = document.createElement(keyCmdbName);
@@ -347,6 +355,8 @@ public final class ConfigurationManager  {
             keyUsername.appendChild(document.createTextNode(defaultValueCmdbUsername));
             Element keyPassword = document.createElement(keyCmdbPassword);
             keyPassword.appendChild(document.createTextNode(defaultValueCmdbPassword));
+            groupCredentials.appendChild(keyApiUsername);
+            groupCredentials.appendChild(keyApiPassword);
             groupCredentials.appendChild(keyIp);
             groupCredentials.appendChild(keyName);
             groupCredentials.appendChild(keyUsername);
