@@ -25,8 +25,8 @@ public final class JftfCliParser implements Callable<Integer> {
     @Option(names = {"-l", "--list-runner"}, description = "display the available runners for selected run options")
     private boolean listRunner = false;
 
-    @Option(names = {"-r", "--register"}, description = "register test case in the jftf cmdb")
-    private boolean registerTest = false;
+    @Option(names = {"-rl", "--register-legacy"}, description = "register test case in the jftf cmdb (LEGACY)")
+    private boolean registerTestLegacy = false;
 
     private JftfCliParser(){}
 
@@ -39,7 +39,7 @@ public final class JftfCliParser implements Callable<Integer> {
         if(helpRequested){
             return 0;
         }
-        if(registerTest){
+        if(registerTestLegacy){
             return 10;
         }
         if(listRunner){
