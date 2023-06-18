@@ -360,7 +360,7 @@ public final class ConfigurationManager  {
         try {
             DocumentBuilder documentBuilder = documentBuilderFactory.newDocumentBuilder();
             Document document = documentBuilder.newDocument();
-            Element rootElement = document.createElement(daemonConfigurationName.toLowerCase(Locale.ROOT));
+            Element rootElement = document.createElement(cmdbConfigurationName.toLowerCase(Locale.ROOT));
             document.appendChild(rootElement);
 
             Element groupCredentials = document.createElement(groupCmdbCredentials);
