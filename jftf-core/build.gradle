@@ -1,6 +1,7 @@
 plugins {
     id 'java'
     id 'application'
+    id 'maven-publish'
 }
 
 apply plugin: 'java-library'
@@ -39,4 +40,22 @@ java {
     modularity.inferModulePath = true
     sourceCompatibility = JavaVersion.VERSION_11
     targetCompatibility = JavaVersion.VERSION_11
+}
+
+publishing {
+    repositories {
+        maven {
+            name = "jftf-core"
+            url = "https://maven.pkg.github.com/Java-Functional-Testing-Framework/JFTF-Lib"
+            credentials {
+                username = System.getenv("GITHUB_ACTOR")
+                password = System.getenv("GITHUB_TOKEN")
+            }
+        }
+    }
+    publications {
+        gpr(MavenPublication) {
+            from(components.java)
+        }
+    }
 }
